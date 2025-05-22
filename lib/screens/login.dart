@@ -14,8 +14,8 @@ class LoginPage extends StatefulWidget {
 }
 
 class LoginPageState extends State<LoginPage> {
-  final TextEditingController _usernameController = TextEditingController();
-  final TextEditingController _passwordController = TextEditingController();
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _ciController = TextEditingController();
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
   @override
@@ -33,9 +33,7 @@ class LoginPageState extends State<LoginPage> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    SizedBox(
-                      height: size.height * 0.35,
-                    ),
+                    SizedBox(height: size.height * 0.35),
                     const Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
@@ -46,11 +44,7 @@ class LoginPageState extends State<LoginPage> {
                             fontWeight: FontWeight.bold,
                           ),
                         ),
-                        Icon(
-                          Icons.login,
-                          color: Colors.teal,
-                          size: 30.0,
-                        ),
+                        Icon(Icons.login, color: Colors.teal, size: 30.0),
                       ],
                     ),
                     const SizedBox(height: 0),
@@ -67,17 +61,21 @@ class LoginPageState extends State<LoginPage> {
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
                         buildTextField(
-                            'Usuario', 'Usuario', _usernameController, false),
+                          'Email',
+                          'ej@mail.com',
+                          _emailController,
+                          false,
+                        ),
                         const SizedBox(height: 12),
-                        buildTextField('Contraseña', 'Contraseña',
-                            _passwordController, true),
+                        buildTextField('CI', '12345678', _ciController, true),
                         const SizedBox(height: 20),
                         BottonChange(
-                            colorBack: Colors.teal,
-                            colorFont: Colors.white,
-                            textTile: 'Login',
-                            onPressed: _login,
-                            width: 300)
+                          colorBack: Colors.teal,
+                          colorFont: Colors.white,
+                          textTile: 'Login',
+                          onPressed: _login,
+                          width: 300,
+                        ),
                       ],
                     ),
                   ],
@@ -94,14 +92,16 @@ class LoginPageState extends State<LoginPage> {
     if (_formKey.currentState?.validate() ?? false) {
       try {
         final userProvider = Provider.of<UserProvider>(context, listen: false);
-        final username = _usernameController.text;
-        final password = _passwordController.text;
+        final email = _emailController.text;
+        final ci = int.parse(_ciController.text);
 
-        final response = await AutenticacionServices().loginUsuario(
-            context: context, username: username, password: password);
+        final token = await AutenticacionServices().loginUsuario(
+          context: context,
+          email: email,
+          ci: ci,
+        );
 
-        if (response != null) {
-          final token = response;
+        if (token != null) {
           await userProvider.setToken(token);
 
           Navigator.pushReplacement(
@@ -111,11 +111,8 @@ class LoginPageState extends State<LoginPage> {
                   const HomePage(),
               transitionsBuilder:
                   (context, animation, secondaryAnimation, child) {
-                return FadeTransition(
-                  opacity: animation,
-                  child: child,
-                );
-              },
+                    return FadeTransition(opacity: animation, child: child);
+                  },
             ),
           );
         } else {
@@ -123,43 +120,48 @@ class LoginPageState extends State<LoginPage> {
             const SnackBar(content: Text('Usuario o contraseña incorrectos')),
           );
         }
-      } catch (e) {}
+      } catch (e) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Error: $e')));
+      }
     }
   }
 }
 
-Widget buildTextField(String label, String hint,
-    TextEditingController controller, bool isPassword) {
+Widget buildTextField(
+  String label,
+  String hint,
+  TextEditingController controller,
+  bool isNumber,
+) {
   return TextFormField(
     controller: controller,
+    keyboardType: isNumber ? TextInputType.number : TextInputType.emailAddress,
     decoration: InputDecoration(
       labelText: label,
       hintText: hint,
       hintStyle: const TextStyle(color: Color.fromARGB(255, 174, 191, 200)),
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(10),
-        borderSide: const BorderSide(
-          color: Colors.grey,
-        ),
+        borderSide: const BorderSide(color: Colors.grey),
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(10),
-        borderSide: const BorderSide(
-          color: Colors.blue,
-        ),
+        borderSide: const BorderSide(color: Colors.blue),
       ),
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(10),
-        borderSide: const BorderSide(
-          color: Color.fromARGB(255, 174, 191, 200),
-        ),
+        borderSide: const BorderSide(color: Color.fromARGB(255, 174, 191, 200)),
       ),
       contentPadding: const EdgeInsets.symmetric(vertical: 8, horizontal: 15),
     ),
-    obscureText: isPassword,
     validator: (value) {
       if (value == null || value.isEmpty) {
         return 'Este campo no puede estar vacío';
+      }
+      if (isNumber && int.tryParse(value) == null) {
+        return 'Ingrese un número válido';
       }
       return null;
     },

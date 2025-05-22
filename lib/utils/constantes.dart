@@ -1,3 +1,3 @@
 class Constantes {
-  static String uri = "https://medicalrecord-backend-0vea.onrender.com";
+  static String uri = "https://nest-project-image-recognition.onrender.com";
 }

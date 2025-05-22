@@ -2,37 +2,44 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'package:xml/xml.dart' as xml;
 
 import '../utils/constantes.dart';
 
 class AutenticacionServices {
   Future<String?> loginUsuario({
     required BuildContext context,
-    required String username,
-    required String password,
+    required String email,
+    required int ci,
   }) async {
     try {
       final response = await http.post(
-        Uri.parse('${Constantes.uri}/auth/login'),
-        headers: <String, String>{
-          'Content-Type': 'application/json; charset=UTF-8',
-        },
-        body: jsonEncode({'username': username, 'password': password}),
+        Uri.parse('${Constantes.uri}/auth/login/patient'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({'email': email, 'ci': ci}),
       );
+      final responseData = jsonDecode(response.body);
 
       if (response.statusCode == 200) {
-        final document = xml.XmlDocument.parse(response.body);
-        final tokenElement = document.findAllElements('token').first;
-        final token = tokenElement.text;
-        return token;
+        if (responseData.containsKey('access_token')) {
+          return responseData['access_token']; // Token válido.
+        } else if (responseData.containsKey('msg')) {
+          // Mostrar mensaje de error del backend (ej: "paciente no existe").
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text(responseData['msg'])));
+          return null;
+        }
       } else {
-        return null;
+        // Otros códigos de estado (ej: 400, 500).
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error: ${response.statusCode}')),
+        );
       }
+      return null;
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Problemas con el servidor")),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Error de conexión: $e')));
       return null;
     }
   }
