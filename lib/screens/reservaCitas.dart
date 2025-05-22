@@ -1,12 +1,13 @@
+import 'package:asd/components/customAppBar.dart';
+import 'package:asd/screens/horarios.dart';
 import 'package:flutter/material.dart';
 import 'package:line_awesome_flutter/line_awesome_flutter.dart';
 import 'package:provider/provider.dart';
-import 'package:medical_record_movil/components/customAppBar.dart';
-import 'package:medical_record_movil/screens/horarios.dart';
+
 import '../components/cardDoctor.dart';
 import '../components/fadeThroughPageRoute.dart';
-import '../services/reservaService.dart';
 import '../providers/userProvider.dart';
+import '../services/reservaService.dart';
 
 class ReservarCitasPage extends StatefulWidget {
   const ReservarCitasPage({super.key});

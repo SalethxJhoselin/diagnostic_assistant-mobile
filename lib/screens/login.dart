@@ -1,8 +1,7 @@
+import 'package:asd/components/BottonChange.dart';
+import 'package:asd/screens/home.dart';
+import 'package:asd/services/authService.dart';
 import 'package:flutter/material.dart';
-import 'package:jwt_decoder/jwt_decoder.dart';
-import 'package:medical_record_movil/components/BottonChange.dart';
-import 'package:medical_record_movil/screens/home.dart';
-import 'package:medical_record_movil/services/authService.dart';
 import 'package:provider/provider.dart';
 
 import '../providers/userProvider.dart';

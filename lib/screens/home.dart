@@ -1,10 +1,10 @@
+import 'package:asd/screens/RecetasMedicas.dart';
+import 'package:asd/screens/consultas.dart';
+import 'package:asd/screens/historial.dart';
+import 'package:asd/screens/reservaCitas.dart';
+import 'package:asd/screens/tratamientos.dart';
 import 'package:flutter/material.dart';
 import 'package:line_awesome_flutter/line_awesome_flutter.dart';
-import 'package:medical_record_movil/screens/RecetasMedicas.dart';
-import 'package:medical_record_movil/screens/consultas.dart';
-import 'package:medical_record_movil/screens/historial.dart';
-import 'package:medical_record_movil/screens/reservaCitas.dart';
-import 'package:medical_record_movil/screens/tratamientos.dart';
 import 'package:provider/provider.dart';
 
 import '../components/cardConfig.dart';
@@ -146,7 +146,7 @@ class HomePageState extends State<HomePage> {
                   SizedBox(
                     height: screenHeight * 0.4,
                   ),
-                  Container(
+                  SizedBox(
                     width: double.infinity, // Hace que el Row ocupe todo el ancho disponible
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center, // Centrar contenido horizontalmente

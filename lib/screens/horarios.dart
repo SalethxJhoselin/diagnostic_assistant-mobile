@@ -1,10 +1,10 @@
+import 'package:asd/components/customAppBar.dart';
+import 'package:asd/providers/userProvider.dart';
+import 'package:asd/services/reservaService.dart';
 import 'package:flutter/material.dart';
-import 'package:line_awesome_flutter/line_awesome_flutter.dart';
-import 'package:medical_record_movil/components/customAppBar.dart';
-import 'package:medical_record_movil/providers/userProvider.dart';
-import 'package:medical_record_movil/services/reservaService.dart';
-import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
+import 'package:line_awesome_flutter/line_awesome_flutter.dart';
+import 'package:provider/provider.dart';
 
 class HorariosPage extends StatelessWidget {
   final String doctorName;

@@ -1,8 +1,8 @@
+import 'package:asd/components/BottonChange.dart';
+import 'package:asd/screens/welcomeScreen.dart';
 import 'package:flutter/material.dart';
-import 'package:medical_record_movil/components/BottonChange.dart';
-import 'package:medical_record_movil/screens/welcomeScreen.dart';
-import 'package:provider/provider.dart';
 import 'package:line_awesome_flutter/line_awesome_flutter.dart';
+import 'package:provider/provider.dart';
 
 import '../../providers/themeProvider.dart';
 

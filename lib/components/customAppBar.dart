@@ -1,6 +1,6 @@
+import 'package:asd/components/wabeClipper.dart';
+import 'package:asd/screens/home.dart';
 import 'package:flutter/material.dart';
-import 'package:medical_record_movil/components/wabeClipper.dart';
-import 'package:medical_record_movil/screens/home.dart';
 
 class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
   final String title1;
