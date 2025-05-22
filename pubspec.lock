@@ -65,9 +65,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.19.1"
-<<<<<<< HEAD
-=======
-<<<<<<< Updated upstream
   cross_file:
     dependency: transitive
     description:
@@ -76,9 +73,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.3.4+2"
-=======
->>>>>>> Stashed changes
->>>>>>> versionen
   crypto:
     dependency: transitive
     description:
@@ -467,9 +461,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.16.0"
-<<<<<<< HEAD
-=======
-<<<<<<< Updated upstream
   mime:
     dependency: transitive
     description:
@@ -478,9 +469,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.0.0"
-=======
->>>>>>> Stashed changes
->>>>>>> versionen
   nested:
     dependency: transitive
     description:
@@ -743,13 +731,5 @@ packages:
     source: hosted
     version: "6.5.0"
 sdks:
-<<<<<<< HEAD
-=======
-<<<<<<< Updated upstream
   dart: ">=3.8.0 <4.0.0"
   flutter: ">=3.27.0"
-=======
->>>>>>> versionen
-  dart: ">=3.7.0-0 <4.0.0"
-  flutter: ">=3.24.0"
->>>>>>> Stashed changes
