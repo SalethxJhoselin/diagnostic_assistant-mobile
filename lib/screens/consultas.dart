@@ -1,11 +1,10 @@
 import 'dart:io';
 
+import 'package:asd/services/atencionService.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:line_awesome_flutter/line_awesome_flutter.dart';
-import 'package:medical_record_movil/services/atencionService.dart';
 import 'package:path_provider/path_provider.dart';
-
 import 'package:provider/provider.dart';
 
 import '../components/customAppBar.dart';

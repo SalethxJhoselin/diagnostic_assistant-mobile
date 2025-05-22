@@ -1,9 +1,9 @@
+import 'package:asd/screens/home.dart';
+import 'package:asd/screens/login.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_downloader/flutter_downloader.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:medical_record_movil/screens/home.dart';
-import 'package:medical_record_movil/screens/login.dart';
 import 'package:provider/provider.dart';
 
 import 'providers/themeProvider.dart';
