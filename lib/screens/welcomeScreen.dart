@@ -34,7 +34,7 @@ class WelcomeScreen extends StatelessWidget {
                 ),
                 SizedBox(height: size.height * 0.05),
                 Text(
-                  'Welcome to Medical Records',
+                  'Bienvenido a DermAI',
                   style: TextStyle(
                     fontSize: 24,
                     fontWeight: FontWeight.bold,
@@ -45,9 +45,9 @@ class WelcomeScreen extends StatelessWidget {
                 ),
                 SizedBox(height: size.height * 0.02),
                 Text(
-                  'Manage your health records easily.',
+                  'Diagnóstico, análisis y seguimiento inteligente de tus afecciones dermatológicas.',
                   style: TextStyle(
-                    fontSize: 18,
+                    fontSize: 16,
                     color: !isDark
                         ? const Color(0xff0e1415)
                         : const Color(0xfff9f9ff),
@@ -61,7 +61,7 @@ class WelcomeScreen extends StatelessWidget {
                     BottonChange(
                       colorBack: isDark ? Colors.white : Colors.black,
                       colorFont: isDark ? Colors.black : Colors.white,
-                      textTile: 'Sign in',
+                      textTile: 'Iniciar sesión',
                       onPressed: () {
                         Navigator.of(context).push(
                           FadeThroughPageRoute(
