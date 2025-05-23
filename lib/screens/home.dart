@@ -41,7 +41,7 @@ class HomePageState extends State<HomePage> {
     final userProvider = Provider.of<UserProvider>(context);
     final screenWidth = MediaQuery.of(context).size.width;
     final screenHeight = MediaQuery.of(context).size.height;
-    final bienvenidaText = getGreeting() + (userProvider.usuario ?? 'Usuario');
+    final bienvenidaText = getGreeting() + (userProvider.name ?? 'Usuario');
 
     return Scaffold(
       body: SingleChildScrollView(
@@ -118,7 +118,7 @@ class HomePageState extends State<HomePage> {
                   children: [
                     // Nombre del usuario
                     Text(
-                      userProvider.nombre ?? 'Usuario',
+                      userProvider.name ?? 'Usuario',
                       style: const TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,

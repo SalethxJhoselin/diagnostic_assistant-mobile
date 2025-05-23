@@ -28,11 +28,11 @@ class ConsultasPageState extends State<ConsultasPage> {
 
   Future<List<Map<String, dynamic>>> _loadAtenciones() async {
     final userProvider = Provider.of<UserProvider>(context, listen: false);
-    final userId = userProvider.id;
+    final userId = userProvider.patientId;
 
     if (userId != null) {
       try {
-        return await AtencionService.getAtenciones(userId);
+        return await AtencionService.getAtenciones(int.parse(userId));
       } catch (e) {
         debugPrint('Error al cargar atenciones: $e');
         return [];
@@ -45,11 +45,11 @@ class ConsultasPageState extends State<ConsultasPage> {
 
   Future<void> _downloadReport() async {
     final userProvider = Provider.of<UserProvider>(context, listen: false);
-    final userId = userProvider.id;
+    final userId = userProvider.patientId;
 
     if (userId != null) {
       try {
-        final bytes = await AtencionService.downloadAttentionReport(userId);
+        final bytes = await AtencionService.downloadAttentionReport(int.parse(userId));
         final directory = await getExternalStorageDirectory();
         final filePath = '${directory!.path}/reporte_atencioness_$userId.pdf';
         final file = File(filePath);

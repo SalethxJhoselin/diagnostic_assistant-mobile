@@ -49,7 +49,7 @@ class ReservarCitasPageState extends State<ReservarCitasPage> {
   @override
   Widget build(BuildContext context) {
     final userProvider = Provider.of<UserProvider>(context);
-    final userId = userProvider.id;
+    final userId = userProvider.patientId;
 
     return Scaffold(
       appBar: const CustomAppBar(

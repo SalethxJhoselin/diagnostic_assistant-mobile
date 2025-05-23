@@ -99,7 +99,7 @@ class HorariosPage extends StatelessWidget {
                                       Navigator.pop(
                                           context); // Cierra el diálogo
                                       reservarHorario(context, horario, slot,
-                                          userProvider.id ?? 1);
+                                          int.parse(userProvider.patientId ?? '1'));
                                     },
                                     child: const Text('Reservar'),
                                   ),

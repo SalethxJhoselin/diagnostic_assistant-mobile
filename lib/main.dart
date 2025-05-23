@@ -30,7 +30,7 @@ class MyApp extends StatelessWidget {
       child: Consumer<ThemeProvider>(
         builder: (context, themeProvider, child) {
           return GetMaterialApp(
-            title: 'Namer App',
+            title: 'DermAI',
             theme: ThemeData(
               useMaterial3: true,
               brightness: Brightness.light,

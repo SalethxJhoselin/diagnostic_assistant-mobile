@@ -28,11 +28,11 @@ class TratamientosPageState extends State<TratamientosPage> {
 
   Future<List<Map<String, dynamic>>> _loadTratamientos() async {
     final userProvider = Provider.of<UserProvider>(context, listen: false);
-    final userId = userProvider.id;
+    final userId = userProvider.patientId;
 
     if (userId != null) {
       try {
-        return await TratamientoService.getTratamientos(userId);
+        return await TratamientoService.getTratamientos(int.parse(userId));
       } catch (e) {
         debugPrint('Error al cargar tratamientos: $e');
         return [];
@@ -45,12 +45,12 @@ class TratamientosPageState extends State<TratamientosPage> {
 
   Future<void> _downloadReport() async {
     final userProvider = Provider.of<UserProvider>(context, listen: false);
-    final userId = userProvider.id;
+    final userId = userProvider.patientId;
 
     if (userId != null) {
       try {
         final bytes =
-            await TratamientoService.downloadTratamientoReport(userId);
+            await TratamientoService.downloadTratamientoReport(int.parse(userId));
         final directory = await getExternalStorageDirectory();
         final filePath = '${directory!.path}/reporte_tratamientos_$userId.pdf';
         final file = File(filePath);

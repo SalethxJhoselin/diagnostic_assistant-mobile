@@ -87,7 +87,7 @@ class Config extends StatelessWidget {
                       ),
                       const SizedBox(height: 16),
                       Text(
-                        userProvider.usuario ?? 'Usuario',
+                        userProvider.name ?? 'Usuario',
                         style: const TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
