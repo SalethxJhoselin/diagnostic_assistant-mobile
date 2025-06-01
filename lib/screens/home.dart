@@ -1,17 +1,19 @@
-import 'package:asd/screens/RecetasMedicas.dart';
 import 'package:asd/screens/consultas.dart';
+import 'package:asd/screens/diagnoses.dart';
 import 'package:asd/screens/historial.dart';
 import 'package:asd/screens/reservaCitas.dart';
-import 'package:asd/screens/tratamientos.dart';
+import 'package:asd/screens/treatment.dart';
 import 'package:flutter/material.dart';
 import 'package:line_awesome_flutter/line_awesome_flutter.dart';
 import 'package:provider/provider.dart';
 
+import '../components/CardTreatments.dart';
 import '../components/cardConfig.dart';
 import '../components/cardHome.dart';
 import '../components/fadeThroughPageRoute.dart';
 import '../providers/themeProvider.dart';
 import '../providers/userProvider.dart';
+import '../services/tramientoService.dart';
 import 'buttonConfig/config.dart';
 
 class HomePage extends StatefulWidget {
@@ -85,20 +87,18 @@ class HomePageState extends State<HomePage> {
               child: IconAppBar(
                 icon: LineAwesomeIcons.cog_solid,
                 onPressed: () {
-                  Navigator.of(context).push(
-                    FadeThroughPageRoute(
-                      page: const Config(),
-                    ),
-                  );
+                  Navigator.of(
+                    context,
+                  ).push(FadeThroughPageRoute(page: const Config()));
                 },
               ),
             ),
             Positioned(
               top: screenHeight * 0.15,
-              left: (screenWidth - 300) / 2,
+              left: (screenWidth - 350) / 2,
               child: Container(
-                width: 300,
-                height: 180,
+                width: 350,
+                height: 200,
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(16),
@@ -135,6 +135,57 @@ class HomePageState extends State<HomePage> {
                       ),
                     ),
                     const SizedBox(height: 10),
+                    FutureBuilder<List<Map<String, dynamic>>>(
+                      future: TratamientoService.getTratamientosFromContext(
+                        context,
+                      ),
+                      builder: (context, snapshot) {
+                        if (snapshot.connectionState ==
+                            ConnectionState.waiting) {
+                          return const Padding(
+                            padding: EdgeInsets.only(top: 8.0),
+                            child: LinearProgressIndicator(),
+                          );
+                        }
+                        if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                          return const SizedBox.shrink();
+                        }
+
+                        final tratamientosHoy = obtenerTratamientosParaHoy(
+                          snapshot.data!,
+                        );
+                        if (tratamientosHoy.isEmpty) {
+                          return const Padding(
+                            padding: EdgeInsets.only(top: 8.0),
+                            child: Text('Hoy no tienes tratamientos asignados'),
+                          );
+                        }
+
+                        return Padding(
+                          padding: const EdgeInsets.only(top: 8.0),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text(
+                                'Tratamientos para Hoy',
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 14,
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              ...tratamientosHoy.map(
+                                (t) => Text(
+                                  '• $t',
+                                  style: const TextStyle(fontSize: 12),
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                            ],
+                          ),
+                        );
+                      },
+                    ),
                   ],
                 ),
               ),
@@ -143,17 +194,20 @@ class HomePageState extends State<HomePage> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
+                  SizedBox(height: screenHeight * 0.4),
                   SizedBox(
-                    height: screenHeight * 0.4,
-                  ),
-                  SizedBox(
-                    width: double.infinity, // Hace que el Row ocupe todo el ancho disponible
+                    width: double
+                        .infinity, // Hace que el Row ocupe todo el ancho disponible
                     child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center, // Centrar contenido horizontalmente
+                      mainAxisAlignment: MainAxisAlignment
+                          .center, // Centrar contenido horizontalmente
                       children: [
-                        Expanded(  // Hace que el primer cardHome ocupe proporcionalmente el espacio
+                        Expanded(
+                          // Hace que el primer cardHome ocupe proporcionalmente el espacio
                           child: Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8.0,
+                            ),
                             child: CardHome(
                               text: 'Reservar Cita',
                               icon: LineAwesomeIcons.notes_medical_solid,
@@ -167,9 +221,12 @@ class HomePageState extends State<HomePage> {
                             ),
                           ),
                         ),
-                        Expanded(  // Hace que el segundo cardHome ocupe proporcionalmente el espacio
+                        Expanded(
+                          // Hace que el segundo cardHome ocupe proporcionalmente el espacio
                           child: Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8.0,
+                            ),
                             child: CardHome(
                               text: 'Historial Clinico',
                               icon: LineAwesomeIcons.file_medical_solid,
@@ -186,9 +243,7 @@ class HomePageState extends State<HomePage> {
                       ],
                     ),
                   ),
-                  const SizedBox(
-                    height: 20,
-                  ),
+                  const SizedBox(height: 20),
                   Align(
                     alignment: Alignment.centerLeft,
                     child: Padding(
@@ -203,20 +258,31 @@ class HomePageState extends State<HomePage> {
                           children: const [
                             TextSpan(
                               text: 'Nuestros Servicios',
-                              style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                              ),
+                              style: TextStyle(fontWeight: FontWeight.bold),
                             ),
                           ],
                         ),
                       ),
                     ),
                   ),
-                  const SizedBox(
-                    height: 30,
-                  ),
+                  const SizedBox(height: 30),
                   Column(
                     children: [
+                      CardConfig(
+                        width: 320,
+                        height: 90,
+                        icon1: LineAwesomeIcons.brain_solid,
+                        text1: 'Tratamientos',
+                        text2: 'Servicios de psicología',
+                        onTap: () {
+                          Navigator.of(context).push(
+                            FadeThroughPageRoute(
+                              page: const TratamientosPage(),
+                            ),
+                          );
+                        },
+                      ),
+                      const SizedBox(height: 20),
                       CardConfig(
                         width: 320,
                         height: 90,
@@ -225,9 +291,7 @@ class HomePageState extends State<HomePage> {
                         text2: 'Encuentre sus consultas',
                         onTap: () {
                           Navigator.of(context).push(
-                            FadeThroughPageRoute(
-                              page: const ConsultasPage(),
-                            ),
+                            FadeThroughPageRoute(page: const ConsultasPage()),
                           );
                         },
                       ),
@@ -240,24 +304,7 @@ class HomePageState extends State<HomePage> {
                         text2: 'Encuentre sus diagnosticos',
                         onTap: () {
                           Navigator.of(context).push(
-                            FadeThroughPageRoute(
-                              page: const RecetasMedicasPage(),
-                            ),
-                          );
-                        },
-                      ),
-                      const SizedBox(height: 20),
-                      CardConfig(
-                        width: 320,
-                        height: 90,
-                        icon1: LineAwesomeIcons.brain_solid,
-                        text1: 'Tratamientos',
-                        text2: 'Servicios de psicología',
-                        onTap: () {
-                          Navigator.of(context).push(
-                            FadeThroughPageRoute(
-                              page: const TratamientosPage(),
-                            ),
+                            FadeThroughPageRoute(page: const DiagnosesPage()),
                           );
                         },
                       ),
@@ -274,10 +321,7 @@ class HomePageState extends State<HomePage> {
 }
 
 class IconHome extends StatelessWidget {
-  const IconHome({
-    super.key,
-    required this.icon,
-  });
+  const IconHome({super.key, required this.icon});
 
   final IconData icon;
 
@@ -290,10 +334,7 @@ class IconHome extends StatelessWidget {
         shape: BoxShape.circle,
         color: Colors.teal,
       ),
-      child: Icon(
-        icon,
-        color: Colors.white,
-      ),
+      child: Icon(icon, color: Colors.white),
     );
   }
 }
@@ -314,10 +355,7 @@ class IconAppBar extends StatelessWidget {
         color: Colors.white,
       ),
       child: IconButton(
-        icon: Icon(
-          icon,
-          color: Colors.black,
-        ),
+        icon: Icon(icon, color: Colors.black),
         onPressed: onPressed,
       ),
     );
