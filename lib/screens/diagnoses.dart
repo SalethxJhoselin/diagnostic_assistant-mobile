@@ -1,13 +1,7 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 import 'package:line_awesome_flutter/line_awesome_flutter.dart';
-import 'package:path_provider/path_provider.dart';
-import 'package:provider/provider.dart';
 
 import '../components/customAppBar.dart';
-import '../providers/userProvider.dart';
 import '../services/diagnosticoService.dart';
 
 class DiagnosesPage extends StatefulWidget {
@@ -23,56 +17,7 @@ class DiagnosesPageState extends State<DiagnosesPage> {
   @override
   void initState() {
     super.initState();
-    _futureDiagnoses = _loadDiagnoses();
-  }
-
-  Future<List<Map<String, dynamic>>> _loadDiagnoses() async {
-    final userProvider = Provider.of<UserProvider>(context, listen: false);
-    final userId = userProvider.patientId;
-
-    if (userId != null) {
-      try {
-        return await DiagnosticoService.getDiagnosticos(int.parse(userId));
-      } catch (e) {
-        debugPrint('Error al cargar diagnósticos: $e');
-        return [];
-      }
-    } else {
-      debugPrint('El usuario no está autenticado.');
-      return [];
-    }
-  }
-
-  Future<void> _downloadReport() async {
-    final userProvider = Provider.of<UserProvider>(context, listen: false);
-    final userId = userProvider.patientId;
-
-    if (userId != null) {
-      try {
-        final bytes = await DiagnosticoService.downloadDiagnosticoReport(int.parse(userId));
-        final directory = await getExternalStorageDirectory();
-        final filePath = '${directory!.path}/reporte_diagnosticos_$userId.pdf';
-        final file = File(filePath);
-        await file.writeAsBytes(bytes);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Reporte guardado en: $filePath'),
-          ),
-        );
-      } catch (e) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Error al descargar el reporte: $e'),
-          ),
-        );
-      }
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('El usuario no está autenticado.'),
-        ),
-      );
-    }
+    _futureDiagnoses = DiagnosticoService.getDiagnosticosFromContext(context);
   }
 
   @override
@@ -99,33 +44,13 @@ class DiagnosesPageState extends State<DiagnosesPage> {
           }
 
           final diagnosticos = snapshot.data!;
+
           return SingleChildScrollView(
-            child: Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                children: [
-                  Align(
-                    alignment: Alignment.centerRight,
-                    child: Container(
-                      width: 40,
-                      height: 40,
-                      decoration: const BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: Colors.teal,
-                      ),
-                      child: IconButton(
-                        icon: const Icon(
-                          LineAwesomeIcons.download_solid,
-                          color: Colors.white,
-                        ),
-                        onPressed: _downloadReport,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  ...diagnosticos.map((diagnostico) => buildDiagnosticoCard(diagnostico)).toList(),
-                ],
-              ),
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              children: diagnosticos.map((diagnostico) {
+                return buildDiagnosticoCard(diagnostico);
+              }).toList(),
             ),
           );
         },
@@ -135,14 +60,7 @@ class DiagnosesPageState extends State<DiagnosesPage> {
 
   Widget buildDiagnosticoCard(Map<String, dynamic> diagnostico) {
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
-
-    String formatFecha(List<dynamic>? fecha) {
-      if (fecha != null && fecha.length == 3) {
-        final date = DateTime(fecha[0], fecha[1], fecha[2]);
-        return DateFormat('dd/MM/yyyy').format(date);
-      }
-      return 'Desconocido';
-    }
+    final id = diagnostico['id'];
 
     return Container(
       width: double.infinity,
@@ -152,7 +70,9 @@ class DiagnosesPageState extends State<DiagnosesPage> {
         borderRadius: BorderRadius.circular(16.0),
         boxShadow: [
           BoxShadow(
-            color: isDarkMode ? Colors.black.withOpacity(0.2) : Colors.black.withOpacity(0.1),
+            color: isDarkMode
+                ? Colors.black.withOpacity(0.2)
+                : Colors.black.withOpacity(0.1),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -163,31 +83,23 @@ class DiagnosesPageState extends State<DiagnosesPage> {
         children: [
           Container(
             width: double.infinity,
-            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 10.0),
-            decoration: const BoxDecoration(
-              color: Colors.teal,
-              borderRadius: BorderRadius.vertical(top: Radius.circular(16.0)),
+            padding: const EdgeInsets.symmetric(
+              horizontal: 16.0,
+              vertical: 10.0,
             ),
-            child: Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    diagnostico['diagnostico'] ?? '',
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 16.0,
-                    ),
-                  ),
-                ),
-                IconButton(
-                  icon: const Icon(
-                    LineAwesomeIcons.angle_right_solid,
-                    color: Colors.white,
-                  ),
-                  onPressed: () {},
-                ),
-              ],
+            decoration: BoxDecoration(
+              color: Colors.teal,
+              borderRadius: const BorderRadius.vertical(
+                top: Radius.circular(16.0),
+              ),
+            ),
+            child: Text(
+              diagnostico['name'] ?? 'Sin nombre',
+              style: const TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+                fontSize: 16.0,
+              ),
             ),
           ),
           Padding(
@@ -195,17 +107,56 @@ class DiagnosesPageState extends State<DiagnosesPage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                buildInfoRow('Fecha', formatFecha(diagnostico['fecha'])),
+                buildInfoRow('Descripción', diagnostico['description']),
                 const Divider(),
-                buildInfoRow('Especialidad', diagnostico['especialidad']),
+                buildInfoRow(
+                  'Fecha de Creación',
+                  _formatFecha(diagnostico['creationDate']),
+                ),
                 const Divider(),
-                buildInfoRow('Médico', diagnostico['medico']),
+                const Text(
+                  'Consultas Asociadas:',
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                ),
+                const SizedBox(height: 8),
+                ...?diagnostico['consultations']?.map((c) {
+                  return Padding(
+                    padding: const EdgeInsets.only(left: 8.0, bottom: 8.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        buildInfoRow(
+                          'Fecha',
+                          _formatFecha(c['consultation']['consultationDate']),
+                        ),
+                        buildInfoRow('Motivo', c['consultation']['motivo']),
+                        buildInfoRow(
+                          'Paciente',
+                          c['consultation']['patient']['name'],
+                        ),
+                        const Divider(),
+                      ],
+                    ),
+                  );
+                }).toList(),
               ],
             ),
           ),
         ],
       ),
     );
+  }
+
+  String _formatFecha(String? fechaISO) {
+    if (fechaISO == null) return 'No disponible';
+    try {
+      final date = DateTime.parse(fechaISO);
+      return '${date.day.toString().padLeft(2, '0')}/'
+          '${date.month.toString().padLeft(2, '0')}/'
+          '${date.year}';
+    } catch (_) {
+      return 'Fecha inválida';
+    }
   }
 
   Widget buildInfoRow(String title, String? value) {
@@ -224,7 +175,7 @@ class DiagnosesPageState extends State<DiagnosesPage> {
         ),
         Expanded(
           child: Text(
-            value ?? '',
+            value ?? 'No disponible',
             style: TextStyle(
               fontSize: 12.0,
               color: isDarkMode ? Colors.white54 : Colors.black54,
