@@ -41,6 +41,9 @@ dependencies:
   line_awesome_flutter: ^3.0.1
   animations: ^2.0.11
   http: ^1.2.2
+  path_provider: ^2.0.0
+  open_file: ^3.2.1
+  file_picker: ^10.1.9
   flutter_secure_storage: ^9.2.4
   jwt_decoder: ^2.0.1
   xml: ^6.5.0
