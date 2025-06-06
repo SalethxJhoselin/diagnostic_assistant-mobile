@@ -1,4 +1,4 @@
-import 'package:asd/screens/consultas.dart';
+import 'package:asd/screens/consulations.dart';
 import 'package:asd/screens/diagnoses.dart';
 import 'package:asd/screens/historial.dart';
 import 'package:asd/screens/reservaCitas.dart';
@@ -6,7 +6,7 @@ import 'package:asd/screens/treatment.dart';
 import 'package:flutter/material.dart';
 import 'package:line_awesome_flutter/line_awesome_flutter.dart';
 import 'package:provider/provider.dart';
-
+import 'package:asd/screens/enfermedades.dart';
 import '../components/CardTreatments.dart';
 import '../components/cardConfig.dart';
 import '../components/cardHome.dart';
@@ -305,6 +305,21 @@ class HomePageState extends State<HomePage> {
                         onTap: () {
                           Navigator.of(context).push(
                             FadeThroughPageRoute(page: const DiagnosesPage()),
+                          );
+                        },
+                      ),
+                      const SizedBox(height: 20),
+                      CardConfig(
+                        width: 320,
+                        height: 90,
+                        icon1: LineAwesomeIcons.capsules_solid,
+                        text1: 'Recomendaciones',
+                        text2: 'Consulte sus dudas',
+                        onTap: () {
+                          Navigator.of(context).push(
+                            FadeThroughPageRoute(
+                              page: const EnfermedadesPage(),
+                            ),
                           );
                         },
                       ),
