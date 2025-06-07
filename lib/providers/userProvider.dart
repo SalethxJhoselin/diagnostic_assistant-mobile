@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:jwt_decoder/jwt_decoder.dart';
 
+import '../services/patientService.dart';
+
 class UserProvider with ChangeNotifier {
   final FlutterSecureStorage _storage = const FlutterSecureStorage();
 
@@ -51,30 +53,51 @@ class UserProvider with ChangeNotifier {
     return !isExpired;
   }
 
-  // Cargar usuario desde el token
+  Future<void> fetchAndSetPatientData() async {
+    if (_token == null || _patientId == null) return;
+
+    final data = await PatientService.getPatientById(
+      patientId: _patientId!,
+      token: _token!,
+    );
+
+    if (data != null) {
+      _name = data['name'];
+      _aPaternal = data['aPaternal'];
+      _aMaternal = data['aMaternal'];
+      _sexo = data['sexo'];
+      _birthDate = data['birthDate'];
+      _phone = data['phone'];
+      _email = data['email'];
+      _ci = data['ci'];
+      _organizationId = data['organizationId'];
+      notifyListeners();
+    }
+  }
+
+  List<Map<String, dynamic>> _organizations = [];
+
+  List<Map<String, dynamic>> get organizations => _organizations;
+
   Future<void> loadUserFromToken() async {
     final token = await _storage.read(key: 'token');
     if (token != null && !JwtDecoder.isExpired(token)) {
-      _token = token; // Asegúrate de asignar el token recuperado
-      final decodedToken = JwtDecoder.decode(
-        token,
-      ); // Usa el token recién recuperado
-
-      // Extraer datos del paciente
-      final patientData = decodedToken['patient'];
-      _patientId = patientData['id'];
-      _name = patientData['name'];
-      _aPaternal = patientData['aPaternal'];
-      _aMaternal = patientData['aMaternal'];
-      _sexo = patientData['sexo'];
-      _birthDate = patientData['birthDate'];
-      _phone = patientData['phone'];
-      _email = patientData['email'];
-      _ci = patientData['ci'];
-      _organizationId = patientData['organizationId'];
-
+      _token = token;
+      final decodedToken = JwtDecoder.decode(token);
+      _organizations = List<Map<String, dynamic>>.from(
+        decodedToken['organizations'] ?? [],
+      );
       notifyListeners();
     }
+  }
+
+  // Nuevo método para cargar la organización seleccionada
+  void selectOrganization(String orgId) {
+    final org = _organizations.firstWhere((o) => o['id'] == orgId);
+    _organizationId = org['id'];
+    _patientId = org['patientId'];
+    _email = org['hostUser'];
+    notifyListeners();
   }
 
   // Guardar token y cargar datos del usuario
