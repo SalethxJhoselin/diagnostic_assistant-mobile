@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
+import '../components/DownloadHistoryButton.dart';
 import '../providers/userProvider.dart';
 import '../services/historyService.dart';
 
@@ -70,7 +71,8 @@ class _PatientHistoryPageState extends State<PatientHistoryPage> {
                   // Header con información del paciente
                   _PatientHeader(patient: patient),
                   const SizedBox(height: 8),
-
+                  const DownloadHistoryButton(),
+                  const SizedBox(height: 12),
                   // Lista de consultas
                   if (consultations.isEmpty)
                     _buildEmptyState(colorScheme, theme)
@@ -346,10 +348,7 @@ class _ConsultaTimelineItem extends StatelessWidget {
                           color: Colors.teal.withOpacity(0.1),
                           borderRadius: BorderRadius.circular(12),
                         ),
-                        child: Icon(
-                          Icons.medical_services,
-                          color: Colors.teal,
-                        ),
+                        child: Icon(Icons.medical_services, color: Colors.teal),
                       ),
                       const SizedBox(width: 12),
                       Expanded(
