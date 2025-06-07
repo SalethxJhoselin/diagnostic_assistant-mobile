@@ -1,12 +1,13 @@
 import 'package:asd/screens/consulations.dart';
 import 'package:asd/screens/diagnoses.dart';
-import 'package:asd/screens/historial.dart';
+import 'package:asd/screens/enfermedades.dart';
+import 'package:asd/screens/patientHistory.dart';
 import 'package:asd/screens/reservaCitas.dart';
 import 'package:asd/screens/treatment.dart';
 import 'package:flutter/material.dart';
 import 'package:line_awesome_flutter/line_awesome_flutter.dart';
 import 'package:provider/provider.dart';
-import 'package:asd/screens/enfermedades.dart';
+
 import '../components/CardTreatments.dart';
 import '../components/cardConfig.dart';
 import '../components/cardHome.dart';
@@ -233,7 +234,7 @@ class HomePageState extends State<HomePage> {
                               onTap: () {
                                 Navigator.of(context).push(
                                   FadeThroughPageRoute(
-                                    page: const HistorialClinicoPage(),
+                                    page: const PatientHistoryPage(),
                                   ),
                                 );
                               },

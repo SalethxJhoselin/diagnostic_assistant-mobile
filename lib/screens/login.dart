@@ -1,10 +1,10 @@
 import 'package:asd/components/BottonChange.dart';
-import 'package:asd/screens/home.dart';
 import 'package:asd/services/authService.dart';
 import 'package:flutter/material.dart';
 import 'package:local_auth/local_auth.dart';
 import 'package:provider/provider.dart';
 
+import '../components/SelectOrganizationPage.dart';
 import '../providers/userProvider.dart';
 
 class LoginPage extends StatefulWidget {
@@ -214,7 +214,7 @@ class LoginPageState extends State<LoginPage> {
           Navigator.pushReplacement(
             context,
             PageRouteBuilder(
-              pageBuilder: (_, __, ___) => const HomePage(),
+              pageBuilder: (_, __, ___) => const SelectOrganizationPage(),
               transitionsBuilder: (_, animation, __, child) =>
                   FadeTransition(opacity: animation, child: child),
             ),
