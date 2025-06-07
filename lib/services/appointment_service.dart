@@ -6,11 +6,14 @@ import 'package:provider/provider.dart';
 import '../providers/userProvider.dart'; // Importamos el UserProvider
 
 class AppointmentService {
-  // Obtener las horas de atención
-  static Future<Map<String, dynamic>> obtenerHorasAtencion() async {
+  // Obtener las horas de atención para una organización específica
+  static Future<Map<String, dynamic>> obtenerHorasAtencionPorOrganizacion(
+    String organizationId,
+  ) async {
+    // URL modificada con el ID de la organización
     final uri = Uri.parse(
-      '${Constantes.uri}/attention-hour',
-    ); // La URL de la API
+      '${Constantes.uri}/attention-hour/organization/$organizationId',
+    );
 
     try {
       final response = await http.get(uri);
@@ -21,7 +24,7 @@ class AppointmentService {
         ); // Devolvemos la respuesta como un mapa
       } else {
         throw Exception(
-          'Error al cargar las horas de atención: ${response.statusCode}',
+          'Error al cargar las horas de atención para la organización: ${response.statusCode}',
         );
       }
     } catch (e) {
