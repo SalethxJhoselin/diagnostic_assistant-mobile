@@ -56,7 +56,6 @@ class DiagnosesPageState extends State<DiagnosesPage> {
 
   Widget buildDiagnosticoCard(Map<String, dynamic> diagnostico) {
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
-    final id = diagnostico['id'];
 
     return Container(
       width: double.infinity,

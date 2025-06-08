@@ -1,4 +1,7 @@
+import 'package:asd/components/Card.dart';
+import 'package:asd/components/actionButton.dart';
 import 'package:asd/components/wabeClipper.dart';
+import 'package:asd/providers/themeProvider.dart';
 import 'package:asd/screens/consulations.dart';
 import 'package:asd/screens/diagnoses.dart';
 import 'package:asd/screens/enfermedades.dart';
@@ -10,12 +13,9 @@ import 'package:flutter/material.dart';
 import 'package:line_awesome_flutter/line_awesome_flutter.dart';
 import 'package:provider/provider.dart';
 
-import '../components/Card.dart';
 import '../components/fadeThroughPageRoute.dart';
 import '../providers/userProvider.dart';
 import '../services/tramientoService.dart';
-
-// Importa tus pantallas y componentes aquí...
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -27,9 +27,9 @@ class HomePage extends StatefulWidget {
 class HomePageState extends State<HomePage> {
   String getGreeting() {
     final hour = DateTime.now().hour;
-    if (hour < 12) return '¡Buenos días';
-    if (hour < 18) return '¡Buenas tardes';
-    return '¡Buenas noches';
+    if (hour < 12) return '¡Buenos días!';
+    if (hour < 18) return '¡Buenas tardes!';
+    return '¡Buenas noches!';
   }
 
   @override
@@ -38,61 +38,47 @@ class HomePageState extends State<HomePage> {
     final colorScheme = theme.colorScheme;
     final isDark = theme.brightness == Brightness.dark;
 
-    // Colores adaptativos que cambian con el tema
-    final primaryColor = colorScheme.primary;
+    final primaryColor = Colors.teal;
     final primaryContainer = colorScheme.primaryContainer;
     final surfaceColor = colorScheme.surface;
     final onSurfaceColor = colorScheme.onSurface;
-    final cardColor = colorScheme.surfaceVariant;
 
     return Scaffold(
-      backgroundColor: cardColor.withOpacity(0.1),
-      body: CustomScrollView(
-        slivers: [
-          // AppBar personalizado con efecto de onda
-          SliverAppBar(
-            expandedHeight: 200,
-            flexibleSpace: FlexibleSpaceBar(
-              background: ClipPath(
-                clipper: DoubleWaveClipper(),
-                child: Container(
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [
-                        primaryContainer,
-                        isDark ? Colors.teal.shade700 : Colors.teal.shade400,
-                      ],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                    ),
+      body: SingleChildScrollView(
+        child: Stack(
+          children: [
+            ClipPath(
+              clipper: DoubleWaveClipper(),
+              child: Container(
+                height: 250,
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [
+                      primaryContainer,
+                      isDark ? Colors.teal.shade700 : Colors.teal.shade400,
+                    ],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
                   ),
                 ),
               ),
             ),
-          ),
 
-          // Contenido principal
-          SliverPadding(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-            sliver: SliverList(
-              delegate: SliverChildListDelegate([
-                // Encabezado con saludo y perfil
-                _buildHeader(context, onSurfaceColor, primaryColor),
-
-                // Tarjeta de próximas citas
-                _buildAppointmentsCard(context, surfaceColor, onSurfaceColor),
-
-                // Sección de acciones principales
-                _buildMainActionsSection(primaryColor, onSurfaceColor),
-
-                // Sección de servicios
-                _buildServicesSection(primaryColor, onSurfaceColor),
-
-                const SizedBox(height: 40),
-              ]),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: Column(
+                children: [
+                  const SizedBox(height: 40), 
+                  _buildHeader(context, onSurfaceColor, primaryColor),
+                  _buildAppointmentsCard(context, surfaceColor, onSurfaceColor),
+                  _buildMainActionsSection(primaryColor, onSurfaceColor),
+                  _buildServicesSection(primaryColor, onSurfaceColor),
+                  const SizedBox(height: 40),
+                ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -161,7 +147,6 @@ class HomePageState extends State<HomePage> {
               color: textColor,
             ),
           ),
-          const SizedBox(height: 16),
           FutureBuilder<Map<String, dynamic>>(
             future: TratamientoService.getRecordatoriosPorPaciente(context),
             builder: (context, snapshot) {
@@ -235,9 +220,8 @@ class HomePageState extends State<HomePage> {
                 Icon(
                   LineAwesomeIcons.check_circle,
                   size: 16,
-                  color: theme.colorScheme.primary,
+                  color: Colors.teal,
                 ),
-                const SizedBox(width: 8),
                 Expanded(
                   child: Text(
                     t,
@@ -256,6 +240,8 @@ class HomePageState extends State<HomePage> {
 
   Widget _buildMainActionsSection(Color primaryColor, Color textColor) {
     final theme = Theme.of(context);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Column(
       children: [
         Padding(
@@ -276,72 +262,45 @@ class HomePageState extends State<HomePage> {
           mainAxisSpacing: 16,
           crossAxisSpacing: 16,
           children: [
-            _buildActionCard(
-              'Reservar Cita',
-              LineAwesomeIcons.notes_medical_solid,
-              const ReservarCitasPage(),
-              primaryColor,
-              textColor,
+            ActionButton(
+              icon: LineAwesomeIcons.notes_medical_solid,
+              title: 'Reservar Cita',
+              color: Colors.teal,
+              textColor: textColor,
+              isDark: isDark,
+              vertical: true,
+              roundedIcon: true,
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  FadeThroughPageRoute(page: const ReservarCitasPage()),
+                );
+              },
             ),
-            _buildActionCard(
-              'Historial Clínico',
-              LineAwesomeIcons.file_medical_solid,
-              const PatientHistoryPage(),
-              primaryColor,
-              textColor,
+            ActionButton(
+              icon: LineAwesomeIcons.file_medical_solid,
+              title: 'Historial Clínico',
+              color: Colors.teal,
+              textColor: textColor,
+              isDark: isDark,
+              vertical: true,
+              roundedIcon: true,
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  FadeThroughPageRoute(page: const PatientHistoryPage()),
+                );
+              },
             ),
           ],
         ),
-        const SizedBox(height: 24),
       ],
     );
   }
 
-  Widget _buildActionCard(
-    String title,
-    IconData icon,
-    Widget page,
-    Color primaryColor,
-    Color textColor,
-  ) {
-    return Card(
-      elevation: 0,
-      color: Theme.of(context).colorScheme.surface,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      child: InkWell(
-        borderRadius: BorderRadius.circular(16),
-        onTap: () => Navigator.push(context, FadeThroughPageRoute(page: page)),
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Container(
-                width: 48,
-                height: 48,
-                decoration: BoxDecoration(
-                  color: primaryColor.withOpacity(0.1),
-                  shape: BoxShape.circle,
-                ),
-                child: Icon(icon, color: primaryColor),
-              ),
-              const SizedBox(height: 12),
-              Text(
-                title,
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.w500,
-                  color: textColor,
-                ),
-                textAlign: TextAlign.center,
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
   Widget _buildServicesSection(Color primaryColor, Color textColor) {
+    final themeProvider = Provider.of<ThemeProvider>(context);
+
     final theme = Theme.of(context);
     return Column(
       children: [
@@ -357,102 +316,65 @@ class HomePageState extends State<HomePage> {
         ),
         Column(
           children: [
-            _buildServiceItem(
-              LineAwesomeIcons.brain_solid,
-              'Tratamientos',
-              'Servicios de psicología',
-              const TratamientosPage(),
-              primaryColor,
-              textColor,
+            ActionButton(
+              icon: LineAwesomeIcons.brain_solid,
+              title: 'Tratamientos',
+              subtitle: 'Servicios de psicología',
+              color: primaryColor,
+              isDark: themeProvider.isDarkMode,
+              showChevron: true,
+              onPressed: () {
+                Navigator.of(
+                  context,
+                ).push(FadeThroughPageRoute(page: const TratamientosPage()));
+              },
             ),
             const SizedBox(height: 12),
-            _buildServiceItem(
-              LineAwesomeIcons.user_md_solid,
-              'Consulta Médica',
-              'Encuentre sus consultas',
-              const ConsultasPage(),
-              primaryColor,
-              textColor,
+            ActionButton(
+              icon: LineAwesomeIcons.user_md_solid,
+              title: 'Consulta Médica',
+              subtitle: 'Encuentre sus consultas',
+              color: primaryColor,
+              isDark: themeProvider.isDarkMode,
+              showChevron: true,
+              onPressed: () {
+                Navigator.of(
+                  context,
+                ).push(FadeThroughPageRoute(page: const ConsultasPage()));
+              },
             ),
             const SizedBox(height: 12),
-            _buildServiceItem(
-              LineAwesomeIcons.capsules_solid,
-              'Diagnósticos',
-              'Encuentre sus diagnósticos',
-              const DiagnosesPage(),
-              primaryColor,
-              textColor,
+            ActionButton(
+              icon: LineAwesomeIcons.capsules_solid,
+              title: 'Diagnósticos',
+              subtitle: 'Encuentre sus diagnósticos',
+              color: primaryColor,
+              isDark: themeProvider.isDarkMode,
+              showChevron: true,
+              onPressed: () {
+                Navigator.of(
+                  context,
+                ).push(FadeThroughPageRoute(page: const DiagnosesPage()));
+              },
             ),
             const SizedBox(height: 12),
-            _buildServiceItem(
-              LineAwesomeIcons.heartbeat_solid,
-              'Recomendaciones',
-              'Consulte sus dudas',
-              const EnfermedadesPage(),
-              primaryColor,
-              textColor,
+            ActionButton(
+              icon: LineAwesomeIcons.heartbeat_solid,
+              title: 'Recomendaciones',
+              subtitle: 'Consulte sus dudas',
+              color: primaryColor,
+              isDark: themeProvider.isDarkMode,
+              showChevron: true,
+              onPressed: () {
+                Navigator.of(
+                  context,
+                ).push(FadeThroughPageRoute(page: const EnfermedadesPage()));
+              },
             ),
+            const SizedBox(height: 12),
           ],
         ),
       ],
-    );
-  }
-
-  Widget _buildServiceItem(
-    IconData icon,
-    String title,
-    String subtitle,
-    Widget page,
-    Color primaryColor,
-    Color textColor,
-  ) {
-    final theme = Theme.of(context);
-    return Card(
-      elevation: 0,
-      color: theme.colorScheme.surface,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: InkWell(
-        borderRadius: BorderRadius.circular(12),
-        onTap: () => Navigator.push(context, FadeThroughPageRoute(page: page)),
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Row(
-            children: [
-              Container(
-                width: 48,
-                height: 48,
-                decoration: BoxDecoration(
-                  color: primaryColor.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Icon(icon, color: primaryColor),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      title,
-                      style: theme.textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.w500,
-                        color: textColor,
-                      ),
-                    ),
-                    Text(
-                      subtitle,
-                      style: theme.textTheme.bodySmall?.copyWith(
-                        color: textColor.withOpacity(0.6),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              Icon(Icons.chevron_right, color: textColor.withOpacity(0.3)),
-            ],
-          ),
-        ),
-      ),
     );
   }
 
@@ -467,7 +389,6 @@ class HomePageState extends State<HomePage> {
         child: Column(
           children: [
             Icon(icon, size: 40, color: textColor.withOpacity(0.3)),
-            const SizedBox(height: 8),
             Text(
               message,
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(

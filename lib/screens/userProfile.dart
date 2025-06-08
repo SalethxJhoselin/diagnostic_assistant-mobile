@@ -50,9 +50,7 @@ class UserProfilePage extends StatelessWidget {
             ProfileCard(
               child: Column(
                 children: [
-                  const ProfileAvatar(
-                    imagePath: Assets.imagesLogoUsuario,
-                  ),
+                  const ProfileAvatar(imagePath: Assets.imagesLogoUsuario),
                   const SizedBox(height: 16),
                   Text(
                     '${userProvider.name ?? 'Usuario'} '
@@ -72,7 +70,14 @@ class UserProfilePage extends StatelessWidget {
                   ),
                   const SizedBox(height: 20),
                   // Botón para cambiar tema
-                  _buildThemeToggleButton(context, isDark, themeProvider),
+                  ActionButton(
+                    icon: isDark ? LineAwesomeIcons.sun : LineAwesomeIcons.moon,
+                    title: isDark ? 'Modo Claro' : 'Modo Oscuro',
+                    color: Colors.teal,
+                    isDark: isDark,
+                    showChevron: true,
+                    onPressed: () => themeProvider.toggleTheme(!isDark),
+                  ),
                 ],
               ),
             ),
@@ -133,61 +138,17 @@ class UserProfilePage extends StatelessWidget {
                   margin: const EdgeInsets.symmetric(horizontal: 16),
                   child: ActionButton(
                     icon: LineAwesomeIcons.sign_out_alt_solid,
-                    text: 'Cerrar Sesión',
+                    title: 'Cerrar Sesión',
                     color: Colors.red,
-                    onPressed: () => _cerrarSesion(context),
                     isDark: isDark,
+                    showChevron: false,
+                    onPressed: () => _cerrarSesion(context),
                   ),
                 ),
+                const SizedBox(height: 40),
               ],
             ),
           ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildThemeToggleButton(
-    BuildContext context,
-    bool isDark,
-    ThemeProvider themeProvider,
-  ) {
-    return Material(
-      borderRadius: BorderRadius.circular(12),
-      color: Theme.of(context).colorScheme.surfaceVariant.withOpacity(0.3),
-      child: InkWell(
-        borderRadius: BorderRadius.circular(12),
-        onTap: () => themeProvider.toggleTheme(!isDark),
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-          child: Row(
-            children: [
-              Container(
-                width: 40,
-                height: 40,
-                decoration: BoxDecoration(
-                  color: Colors.teal.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Icon(
-                  isDark ? LineAwesomeIcons.sun : LineAwesomeIcons.moon,
-                  color: Colors.teal,
-                ),
-              ),
-              const SizedBox(width: 12),
-              Text(
-                isDark ? 'Modo Claro' : 'Modo Oscuro',
-                style: Theme.of(
-                  context,
-                ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w500),
-              ),
-              const Spacer(),
-              Icon(
-                Icons.chevron_right,
-                color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
-              ),
-            ],
-          ),
         ),
       ),
     );

@@ -90,11 +90,9 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
-      backgroundColor: theme.colorScheme.surfaceVariant.withOpacity(0.2),
       appBar: CustomAppBar(title1: 'Editar Perfil'),
       body: SingleChildScrollView(
         padding: const EdgeInsets.only(bottom: 32),
@@ -119,10 +117,10 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                   const SizedBox(height: 24),
                   ActionButton(
                     icon: LineAwesomeIcons.save,
-                    text: 'Guardar Cambios',
+                    title: 'Guardar Cambios',
                     color: Colors.teal,
-                    onPressed: _isLoading ? null : () => _updateProfile(),
                     isDark: isDark,
+                    onPressed: _isLoading ? () {} : () => _updateProfile(),
                   ),
                 ],
               ),
