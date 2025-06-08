@@ -1,11 +1,7 @@
 import 'package:asd/components/customAppBar.dart';
-import 'package:asd/screens/horarios.dart';
 import 'package:flutter/material.dart';
-import 'package:line_awesome_flutter/line_awesome_flutter.dart';
 import 'package:provider/provider.dart';
 
-import '../components/cardDoctor.dart';
-import '../components/fadeThroughPageRoute.dart';
 import '../providers/userProvider.dart';
 import '../services/reservaService.dart';
 
@@ -54,9 +50,6 @@ class ReservarCitasPageState extends State<ReservarCitasPage> {
     return Scaffold(
       appBar: const CustomAppBar(
         title1: 'Reserva tu Cita',
-        icon: LineAwesomeIcons.angle_left_solid,
-        colorBack: Colors.teal,
-        titlecolor: Colors.black,
       ),
       body: isLoading
           ? const Center(child: CircularProgressIndicator())
@@ -80,6 +73,7 @@ class ReservarCitasPageState extends State<ReservarCitasPage> {
 
                       return Padding(
                         padding: const EdgeInsets.all(16.0),
+                        /*
                         child: CardDoctor(
                           doctorName:
                               doctor['doctorNombre'] ?? 'Nombre no disponible',
@@ -140,7 +134,7 @@ class ReservarCitasPageState extends State<ReservarCitasPage> {
                               );
                             }
                           },
-                        ),
+                        ),*/
                       );
                     },
                   );

@@ -1,8 +1,11 @@
+import 'package:asd/components/CustomAppBar.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:line_awesome_flutter/line_awesome_flutter.dart';
 import 'package:table_calendar/table_calendar.dart';
 
+import '../components/Card.dart';
+import '../components/infoItem.dart';
 import '../components/reportFormScreen.dart';
 import '../services/tramientoService.dart';
 
@@ -143,24 +146,7 @@ class TratamientosPageState extends State<TratamientosPage> {
 
     return Scaffold(
       backgroundColor: colorScheme.surfaceVariant.withOpacity(0.2),
-      appBar: AppBar(
-        title: const Text('Mis Tratamientos'),
-        centerTitle: true,
-        elevation: 0,
-        flexibleSpace: Container(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              colors: [colorScheme.primaryContainer, Colors.teal],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
-          ),
-        ),
-        leading: IconButton(
-          icon: const Icon(LineAwesomeIcons.angle_left_solid),
-          onPressed: () => Navigator.of(context).pop(),
-        ),
-      ),
+      appBar: CustomAppBar(title1: 'Mis Tratamientos'), // Nuevo CustomAppBar
       body: Stack(
         children: [
           FutureBuilder<Map<String, dynamic>>(
@@ -222,102 +208,93 @@ class TratamientosPageState extends State<TratamientosPage> {
                 padding: const EdgeInsets.only(bottom: 32),
                 child: Column(
                   children: [
-                    Padding(
-                      padding: const EdgeInsets.all(16.0),
-                      child: Material(
-                        borderRadius: BorderRadius.circular(18),
-                        elevation: 1,
-                        color: colorScheme.surface,
-                        child: Padding(
-                          padding: const EdgeInsets.all(16),
-                          child: TableCalendar<String>(
-                            firstDay: DateTime.now().subtract(
-                              const Duration(days: 365),
-                            ),
-                            lastDay: DateTime.now().add(
-                              const Duration(days: 365),
-                            ),
-                            focusedDay: _focusedDay,
-                            selectedDayPredicate: (day) =>
-                                isSameDay(_selectedDay, day),
-                            onDaySelected: (selected, focused) {
-                              setState(() {
-                                _selectedDay = selected;
-                                _focusedDay = focused;
-                              });
-                            },
-                            calendarFormat: _calendarFormat,
-                            availableCalendarFormats: const {
-                              CalendarFormat.week: 'Semana',
-                            },
-                            calendarStyle: CalendarStyle(
-                              todayDecoration: BoxDecoration(
-                                color: Colors.teal[200],
-                                shape: BoxShape.circle,
-                              ),
-                              selectedDecoration: const BoxDecoration(
-                                color: Colors.teal,
-                                shape: BoxShape.circle,
-                              ),
-                              markerDecoration: const BoxDecoration(
-                                color: Colors.teal,
-                                shape: BoxShape.circle,
-                              ),
-                              markersMaxCount: 3,
-                              defaultTextStyle:
-                                  theme.textTheme.bodyMedium ??
-                                  const TextStyle(),
-                              weekendTextStyle:
-                                  theme.textTheme.bodyMedium ??
-                                  const TextStyle(),
-                              outsideTextStyle:
-                                  (theme.textTheme.bodyMedium ??
-                                          const TextStyle())
-                                      .copyWith(
-                                        color: colorScheme.onSurface
-                                            .withOpacity(0.3),
-                                      ),
-                            ),
-                            eventLoader: _getEventosParaDia,
-                            headerStyle: HeaderStyle(
-                              formatButtonVisible: false,
-                              titleCentered: true,
-                              titleTextStyle:
-                                  (theme.textTheme.titleMedium ??
-                                          const TextStyle())
-                                      .copyWith(fontWeight: FontWeight.w600),
-                              leftChevronIcon: Icon(
-                                Icons.chevron_left,
-                                color: colorScheme.onSurface,
-                              ),
-                              rightChevronIcon: Icon(
-                                Icons.chevron_right,
-                                color: colorScheme.onSurface,
-                              ),
-                            ),
+                    ProfileCard(
+                      child: TableCalendar<String>(
+                        firstDay: DateTime.now().subtract(
+                          const Duration(days: 365),
+                        ),
+                        lastDay: DateTime.now().add(const Duration(days: 365)),
+                        focusedDay: _focusedDay,
+                        selectedDayPredicate: (day) =>
+                            isSameDay(_selectedDay, day),
+                        onDaySelected: (selected, focused) {
+                          setState(() {
+                            _selectedDay = selected;
+                            _focusedDay = focused;
+                          });
+                        },
+                        calendarFormat: _calendarFormat,
+                        availableCalendarFormats: const {
+                          CalendarFormat.week: 'Semana',
+                        },
+                        calendarStyle: CalendarStyle(
+                          todayDecoration: BoxDecoration(
+                            color: Colors.teal[200],
+                            shape: BoxShape.circle,
+                          ),
+                          selectedDecoration: const BoxDecoration(
+                            color: Colors.teal,
+                            shape: BoxShape.circle,
+                          ),
+                          markerDecoration: const BoxDecoration(
+                            color: Colors.teal,
+                            shape: BoxShape.circle,
+                          ),
+                          markersMaxCount: 3,
+                          defaultTextStyle:
+                              theme.textTheme.bodyMedium ?? const TextStyle(),
+                          weekendTextStyle:
+                              theme.textTheme.bodyMedium ?? const TextStyle(),
+                          outsideTextStyle:
+                              (theme.textTheme.bodyMedium ?? const TextStyle())
+                                  .copyWith(
+                                    color: colorScheme.onSurface.withOpacity(
+                                      0.3,
+                                    ),
+                                  ),
+                        ),
+                        eventLoader: _getEventosParaDia,
+                        headerStyle: HeaderStyle(
+                          formatButtonVisible: false,
+                          titleCentered: true,
+                          titleTextStyle:
+                              (theme.textTheme.titleMedium ?? const TextStyle())
+                                  .copyWith(fontWeight: FontWeight.w600),
+                          leftChevronIcon: Icon(
+                            Icons.chevron_left,
+                            color: colorScheme.onSurface,
+                          ),
+                          rightChevronIcon: Icon(
+                            Icons.chevron_right,
+                            color: colorScheme.onSurface,
                           ),
                         ),
                       ),
                     ),
-                    const SizedBox(height: 12),
                     if (_selectedDay != null)
                       ..._getTratamientosConHorasParaDia(
                         recordatorios,
                         _selectedDay!,
-                      ).map(
-                        (tratamiento) => Padding(
+                      ).map((tratamiento) {
+                        final horas = (tratamiento['horas'] as List<DateTime>)
+                            .map(
+                              (hora) =>
+                                  '${hora.hour.toString().padLeft(2, '0')}:${hora.minute.toString().padLeft(2, '0')}',
+                            )
+                            .join(', ');
+
+                        return Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                          child: _ConsultaTimelineItem(
-                            consulta: {
-                              'description': tratamiento['description'],
-                              'horas': tratamiento['horas'],
-                            },
-                            isFirst: false,
-                            isLast: false,
+                          child: InfoItem(
+                            icon: Icons.medical_services,
+                            label:
+                                tratamiento['description'] ?? 'Sin descripción',
+                            value: horas.isNotEmpty
+                                ? horas
+                                : 'Sin horas programadas',
                           ),
-                        ),
-                      ),
-                    const SizedBox(height: 20),
+                        );
+                      }),
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 16.0),
                       child: Row(
@@ -450,125 +427,6 @@ class TratamientosPageState extends State<TratamientosPage> {
     );
   }
 }
-
-class _ConsultaTimelineItem extends StatelessWidget {
-  final Map<String, dynamic> consulta;
-  final bool isFirst;
-  final bool isLast;
-
-  const _ConsultaTimelineItem({
-    required this.consulta,
-    required this.isFirst,
-    required this.isLast,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
-
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Column(
-          children: [
-            if (!isFirst)
-              Container(
-                width: 2,
-                height: 12,
-                color: colorScheme.outline.withOpacity(0.2),
-              ),
-            Container(
-              width: 16,
-              height: 16,
-              decoration: BoxDecoration(
-                color: Colors.teal,
-                shape: BoxShape.circle,
-                border: Border.all(color: colorScheme.surface, width: 3),
-              ),
-            ),
-            if (!isLast)
-              Container(
-                width: 2,
-                height: 12,
-                color: colorScheme.outline.withOpacity(0.2),
-              ),
-          ],
-        ),
-        const SizedBox(width: 16),
-        Expanded(
-          child: Material(
-            borderRadius: BorderRadius.circular(18),
-            elevation: 1,
-            color: colorScheme.surface,
-            child: Padding(
-              padding: const EdgeInsets.all(20),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Container(
-                        width: 40,
-                        height: 40,
-                        decoration: BoxDecoration(
-                          color: Colors.teal.withOpacity(0.1),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Icon(Icons.medical_services, color: Colors.teal),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              consulta['description'],
-                              style: theme.textTheme.bodyLarge?.copyWith(
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 16),
-                  ...List<Widget>.from(
-                    (consulta['horas'] as List<DateTime>).map(
-                      (hora) => Padding(
-                        padding: const EdgeInsets.only(bottom: 12),
-                        child: Row(
-                          children: [
-                            Container(
-                              width: 8,
-                              height: 8,
-                              margin: const EdgeInsets.only(right: 12),
-                              decoration: const BoxDecoration(
-                                color: Colors.teal,
-                                shape: BoxShape.circle,
-                              ),
-                            ),
-                            Text(
-                              '${hora.hour.toString().padLeft(2, '0')}:${hora.minute.toString().padLeft(2, '0')}',
-                              style: theme.textTheme.bodyMedium,
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-}
-
 class _ActionButton extends StatelessWidget {
   final IconData icon;
   final VoidCallback? onPressed;
@@ -582,8 +440,6 @@ class _ActionButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
     return Container(
       width: 48,
       height: 48,

@@ -5,7 +5,6 @@ import 'package:line_awesome_flutter/line_awesome_flutter.dart';
 import 'package:provider/provider.dart';
 
 import '../providers/themeProvider.dart';
-import 'buttonConfig/perfil.dart';
 import 'reservaCitas.dart';
 
 class Navigation extends StatefulWidget {
@@ -18,11 +17,7 @@ class Navigation extends StatefulWidget {
 class NavigationState extends State<Navigation> {
   int selectedIndex = 0;
 
-  final List<Widget> screens = [
-    const HomePage(),
-    const ReservarCitasPage(),
-    const PerfilPage(),
-  ];
+  final List<Widget> screens = [const HomePage(), const ReservarCitasPage()];
 
   @override
   Widget build(BuildContext context) {
@@ -39,10 +34,7 @@ class NavigationState extends State<Navigation> {
             child: child,
           );
         },
-        child: IndexedStack(
-          index: selectedIndex,
-          children: screens,
-        ),
+        child: IndexedStack(index: selectedIndex, children: screens),
       ),
       bottomNavigationBar: ClipRRect(
         borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
@@ -60,8 +52,9 @@ class NavigationState extends State<Navigation> {
           child: BottomNavigationBar(
             elevation: 0,
             type: BottomNavigationBarType.fixed,
-            selectedItemColor:
-                isDark ? const Color.fromARGB(255, 11, 200, 181) : Colors.teal,
+            selectedItemColor: isDark
+                ? const Color.fromARGB(255, 11, 200, 181)
+                : Colors.teal,
             unselectedItemColor: isDark ? Colors.grey : Colors.black54,
             currentIndex: selectedIndex,
             onTap: (index) {
@@ -104,17 +97,18 @@ class NavigationState extends State<Navigation> {
     );
   }
 
-  Widget _buildIcon(
-      {required IconData icon,
-      required bool isSelected,
-      required bool isDark}) {
+  Widget _buildIcon({
+    required IconData icon,
+    required bool isSelected,
+    required bool isDark,
+  }) {
     return Container(
       padding: const EdgeInsets.all(8),
       decoration: BoxDecoration(
         color: isSelected
             ? (isDark
-                ? Colors.teal.withOpacity(0.3)
-                : Colors.teal.withOpacity(0.15))
+                  ? Colors.teal.withOpacity(0.3)
+                  : Colors.teal.withOpacity(0.15))
             : Colors.transparent,
         borderRadius: BorderRadius.circular(12),
       ),

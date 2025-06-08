@@ -1,8 +1,8 @@
-import 'package:flutter/material.dart';
-import 'package:line_awesome_flutter/line_awesome_flutter.dart';
-import '../services/consulta_service.dart'; // Asegúrate de importar el servicio de consultas
 import 'package:asd/components/customAppBar.dart';
 import 'package:asd/screens/enfermedades.dart';
+import 'package:flutter/material.dart';
+
+import '../services/consulta_service.dart'; // Asegúrate de importar el servicio de consultas
 
 class ConsultasPage extends StatefulWidget {
   const ConsultasPage({super.key});
@@ -58,9 +58,6 @@ class _ConsultasPageState extends State<ConsultasPage> {
       ), // Fondo suave y claro para la página
       appBar: const CustomAppBar(
         title1: 'Consultas del Paciente',
-        icon: LineAwesomeIcons.angle_left_solid,
-        colorBack: Colors.teal,
-        titlecolor: Colors.white,
       ),
       body: SingleChildScrollView(
         child: Padding(

@@ -44,6 +44,12 @@ class UserProvider with ChangeNotifier {
     return (email != null && ci != null) ? {'email': email, 'ci': ci} : null;
   }
 
+  Future<void> updateUserData({String? email, int? phone}) async {
+    if (email != null) _email = email;
+    if (phone != null) _phone = phone;
+    notifyListeners();
+  }
+
   Future<bool> hasStoredToken() async {
     final token = await _storage.read(key: 'token');
     if (token == null) {
@@ -56,10 +62,7 @@ class UserProvider with ChangeNotifier {
   Future<void> fetchAndSetPatientData() async {
     if (_token == null || _patientId == null) return;
 
-    final data = await PatientService.getPatientById(
-      patientId: _patientId!,
-      token: _token!,
-    );
+    final data = await PatientService.getPatientById(patientId: _patientId!);
 
     if (data != null) {
       _name = data['name'];

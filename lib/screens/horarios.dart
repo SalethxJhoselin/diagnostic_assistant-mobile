@@ -3,7 +3,6 @@ import 'package:asd/providers/userProvider.dart';
 import 'package:asd/services/reservaService.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:line_awesome_flutter/line_awesome_flutter.dart';
 import 'package:provider/provider.dart';
 
 class HorariosPage extends StatelessWidget {
@@ -23,9 +22,6 @@ class HorariosPage extends StatelessWidget {
     return Scaffold(
       appBar: CustomAppBar(
         title1: ('Horarios de $doctorName'),
-        icon: LineAwesomeIcons.angle_left_solid,
-        colorBack: Colors.teal,
-        titlecolor: Colors.white,
       ),
       body: ListView.builder(
         itemCount: horarios.length,

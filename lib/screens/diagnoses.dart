@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:line_awesome_flutter/line_awesome_flutter.dart';
 
 import '../components/customAppBar.dart';
 import '../services/diagnosticoService.dart';
@@ -28,9 +27,6 @@ class DiagnosesPageState extends State<DiagnosesPage> {
       backgroundColor: isDark ? Colors.black : Colors.grey[100],
       appBar: const CustomAppBar(
         title1: 'Mis Diagnósticos',
-        icon: LineAwesomeIcons.angle_left_solid,
-        colorBack: Colors.teal,
-        titlecolor: Colors.white,
       ),
       body: FutureBuilder<List<Map<String, dynamic>>>(
         future: _futureDiagnoses,

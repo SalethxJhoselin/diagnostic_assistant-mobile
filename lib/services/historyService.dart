@@ -14,19 +14,10 @@ import '../utils/constantes.dart';
 class HistoryService {
   static Future<Map<String, dynamic>?> getPatientHistory({
     required String patientId,
-    required String token,
   }) async {
     try {
-      final url = Uri.parse(
-        '${Constantes.uri}/consultations/patient/$patientId/history',
-      );
-
       final response = await http.get(
-        url,
-        headers: {
-          'Authorization': 'Bearer $token',
-          'Content-Type': 'application/json',
-        },
+        Uri.parse('${Constantes.uri}/consultations/patient/$patientId/history'),
       );
 
       if (response.statusCode == 200) {
@@ -44,7 +35,9 @@ class HistoryService {
   static Future<void> downloadMedicalHistoryReport(BuildContext context) async {
     final userProvider = Provider.of<UserProvider>(context, listen: false);
     final patientId = userProvider.patientId;
-    final uri = Uri.parse('${Constantes.uri}/reportHistory/patient/$patientId/history');
+    final uri = Uri.parse(
+      '${Constantes.uri}/reportHistory/patient/$patientId/history',
+    );
 
     try {
       final response = await http.get(uri);
