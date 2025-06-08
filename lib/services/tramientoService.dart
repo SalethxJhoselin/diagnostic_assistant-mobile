@@ -33,6 +33,26 @@ class TratamientoService {
     }
   }
 
+  static Future<Map<String, dynamic>> getRecordatoriosPorPaciente(
+    BuildContext context,
+  ) async {
+    final userProvider = Provider.of<UserProvider>(context, listen: false);
+    final patientId = userProvider.patientId;
+
+    final uri = Uri.parse(
+      '${Constantes.uri}/treatments/reminders/patient/$patientId',
+    );
+
+    final response = await http.get(uri);
+
+    if (response.statusCode == 200) {
+      final data = json.decode(response.body) as Map<String, dynamic>;
+      return data;
+    } else {
+      throw Exception('Error al cargar los recordatorios');
+    }
+  }
+
   static Future<void> downloadCustomTreatmentReport(
     BuildContext context, {
     String? startDate,

@@ -8,7 +8,6 @@ import 'package:flutter/material.dart';
 import 'package:line_awesome_flutter/line_awesome_flutter.dart';
 import 'package:provider/provider.dart';
 
-import '../components/CardTreatments.dart';
 import '../components/cardConfig.dart';
 import '../components/cardHome.dart';
 import '../components/fadeThroughPageRoute.dart';
@@ -126,8 +125,6 @@ class HomePageState extends State<HomePage> {
                       ),
                     ),
                     const SizedBox(height: 10),
-
-                    // Título de las citas
                     const Text(
                       'Tus Próximas Citas',
                       style: TextStyle(
@@ -136,8 +133,8 @@ class HomePageState extends State<HomePage> {
                       ),
                     ),
                     const SizedBox(height: 10),
-                    FutureBuilder<List<Map<String, dynamic>>>(
-                      future: TratamientoService.getTratamientosFromContext(
+                    FutureBuilder<Map<String, dynamic>>(
+                      future: TratamientoService.getRecordatoriosPorPaciente(
                         context,
                       ),
                       builder: (context, snapshot) {
@@ -152,9 +149,27 @@ class HomePageState extends State<HomePage> {
                           return const SizedBox.shrink();
                         }
 
-                        final tratamientosHoy = obtenerTratamientosParaHoy(
-                          snapshot.data!,
-                        );
+                        final hoy = DateTime.now();
+                        final tratamientosHoy = <String>[];
+
+                        snapshot.data!.forEach((_, value) {
+                          final description = value['description'];
+                          final fechas = (value['dates'] as List<dynamic>)
+                              .map((d) => DateTime.parse(d))
+                              .toList();
+
+                          final tieneHoy = fechas.any(
+                            (fecha) =>
+                                fecha.year == hoy.year &&
+                                fecha.month == hoy.month &&
+                                fecha.day == hoy.day,
+                          );
+
+                          if (tieneHoy) {
+                            tratamientosHoy.add(description);
+                          }
+                        });
+
                         if (tratamientosHoy.isEmpty) {
                           return const Padding(
                             padding: EdgeInsets.only(top: 8.0),

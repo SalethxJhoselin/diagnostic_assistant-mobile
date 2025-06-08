@@ -1,9 +1,8 @@
-import 'package:asd/utils/treatment_utils.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:line_awesome_flutter/line_awesome_flutter.dart';
 import 'package:table_calendar/table_calendar.dart';
 
-import '../components/customAppBar.dart';
 import '../components/reportFormScreen.dart';
 import '../services/tramientoService.dart';
 
@@ -15,7 +14,8 @@ class TratamientosPage extends StatefulWidget {
 }
 
 class TratamientosPageState extends State<TratamientosPage> {
-  late Future<List<Map<String, dynamic>>> _futureTratamientos;
+  late Future<Map<String, dynamic>> _futureTratamientos;
+  late Future<List<Map<String, dynamic>>> _futureTratamientosDetalle;
   final Set<String> _expandedTratamientos = {};
   CalendarFormat _calendarFormat = CalendarFormat.week;
   Map<DateTime, List<String>> eventosTratamiento = {};
@@ -23,10 +23,49 @@ class TratamientosPageState extends State<TratamientosPage> {
   DateTime? _selectedDay;
   bool _isLoading = false;
 
+  List<Map<String, dynamic>> _getTratamientosConHorasParaDia(
+    Map<String, dynamic> data,
+    DateTime diaSeleccionado,
+  ) {
+    final diaUTC = DateTime.utc(
+      diaSeleccionado.year,
+      diaSeleccionado.month,
+      diaSeleccionado.day,
+    );
+
+    final tratamientos = <Map<String, dynamic>>[];
+
+    data.forEach((_, value) {
+      final descripcion = value['description'];
+      final fechas = (value['dates'] as List<dynamic>)
+          .map((d) => DateTime.parse(d))
+          .toList();
+
+      final horasEnEseDia = fechas
+          .where(
+            (fecha) =>
+                fecha.year == diaUTC.year &&
+                fecha.month == diaUTC.month &&
+                fecha.day == diaUTC.day,
+          )
+          .map((f) => f.toLocal())
+          .toList();
+
+      if (horasEnEseDia.isNotEmpty) {
+        tratamientos.add({'description': descripcion, 'horas': horasEnEseDia});
+      }
+    });
+
+    return tratamientos;
+  }
+
   @override
   void initState() {
     super.initState();
-    _futureTratamientos = TratamientoService.getTratamientosFromContext(
+    _futureTratamientos = TratamientoService.getRecordatoriosPorPaciente(
+      context,
+    );
+    _futureTratamientosDetalle = TratamientoService.getTratamientosFromContext(
       context,
     );
   }
@@ -46,6 +85,10 @@ class TratamientosPageState extends State<TratamientosPage> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Reporte guardado en Descargas y abierto exitosamente'),
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10),
+          ),
         ),
       );
     } catch (e) {
@@ -55,15 +98,31 @@ class TratamientosPageState extends State<TratamientosPage> {
             content: Text(
               'Reporte guardado en Descargas, pero no se pudo abrir. Por favor instale un visor de PDF.',
             ),
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10),
+            ),
           ),
         );
       } else if (e.toString().contains('canceló la selección')) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('La generación del reporte fue cancelada.')),
+          SnackBar(
+            content: Text('La generación del reporte fue cancelada.'),
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10),
+            ),
+          ),
         );
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error al descargar el reporte: $e')),
+          SnackBar(
+            content: Text('Error al descargar el reporte: $e'),
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10),
+            ),
+          ),
         );
       }
     } finally {
@@ -73,189 +132,308 @@ class TratamientosPageState extends State<TratamientosPage> {
     }
   }
 
-  void _generarEventos(List<Map<String, dynamic>> tratamientos) {
-    eventosTratamiento.clear();
-    for (final t in tratamientos) {
-      try {
-        final rawFecha =
-            t['consultations']?[0]?['consultation']?['consultationDate'];
-        if (rawFecha == null) continue;
-        final start = DateTime.parse(rawFecha);
-        final dias = parseDuration(t['duration']);
-        final frecuencia = t['frequencyValue'] ?? 1;
-        final unidad = t['frequencyUnit'] ?? 'daily';
-        final fechas = calcularFechasAplicacion(
-          start,
-          dias,
-          frecuencia,
-          unidad,
-        );
-
-        for (final fecha in fechas) {
-          final dia = DateTime.utc(fecha.year, fecha.month, fecha.day);
-          eventosTratamiento
-              .putIfAbsent(dia, () => [])
-              .add(t['description'] ?? '');
-        }
-      } catch (_) {
-        continue;
-      }
-    }
-  }
-
   List<String> _getEventosParaDia(DateTime dia) {
     return eventosTratamiento[DateTime.utc(dia.year, dia.month, dia.day)] ?? [];
   }
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
 
     return Scaffold(
-      backgroundColor: isDark ? Colors.black : Colors.grey[100],
-      appBar: const CustomAppBar(
-        title1: 'Mis Tratamientos',
-        icon: LineAwesomeIcons.angle_left_solid,
-        colorBack: Colors.teal,
-        titlecolor: Colors.white,
+      backgroundColor: colorScheme.surfaceVariant.withOpacity(0.2),
+      appBar: AppBar(
+        title: const Text('Mis Tratamientos'),
+        centerTitle: true,
+        elevation: 0,
+        flexibleSpace: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [colorScheme.primaryContainer, Colors.teal],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+          ),
+        ),
+        leading: IconButton(
+          icon: const Icon(LineAwesomeIcons.angle_left_solid),
+          onPressed: () => Navigator.of(context).pop(),
+        ),
       ),
       body: Stack(
         children: [
-          FutureBuilder<List<Map<String, dynamic>>>(
+          FutureBuilder<Map<String, dynamic>>(
             future: _futureTratamientos,
             builder: (context, snapshot) {
               if (snapshot.connectionState == ConnectionState.waiting) {
-                return const Center(child: CircularProgressIndicator());
-              } else if (snapshot.hasError) {
-                return Center(child: Text('Error: ${snapshot.error}'));
-              } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
                 return const Center(
-                  child: Text('No se encontraron tratamientos'),
+                  child: CircularProgressIndicator(color: Colors.teal),
+                );
+              } else if (snapshot.hasError) {
+                return Center(
+                  child: Text(
+                    'Error: ${snapshot.error}',
+                    style: theme.textTheme.bodyMedium?.copyWith(
+                      color: colorScheme.error,
+                    ),
+                  ),
+                );
+              } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                return Center(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        Icons.medical_services_outlined,
+                        size: 48,
+                        color: colorScheme.onSurface.withOpacity(0.3),
+                      ),
+                      const SizedBox(height: 16),
+                      Text(
+                        'No se encontraron tratamientos',
+                        style: theme.textTheme.titleMedium?.copyWith(
+                          color: colorScheme.onSurface.withOpacity(0.5),
+                        ),
+                      ),
+                    ],
+                  ),
                 );
               }
 
-              final tratamientos = snapshot.data!;
-              _generarEventos(tratamientos);
+              final recordatorios = snapshot.data!;
+              eventosTratamiento.clear();
+
+              recordatorios.forEach((_, value) {
+                final descripcion = value['description'] ?? '';
+                final fechas = (value['dates'] as List<dynamic>)
+                    .map((d) => DateTime.parse(d))
+                    .toList();
+
+                for (final fecha in fechas) {
+                  final dia = DateTime.utc(fecha.year, fecha.month, fecha.day);
+                  eventosTratamiento
+                      .putIfAbsent(dia, () => [])
+                      .add(descripcion);
+                }
+              });
 
               return SingleChildScrollView(
-                child: Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Column(
-                    children: [
-                      TableCalendar<String>(
-                        firstDay: DateTime.now().subtract(
-                          const Duration(days: 365),
-                        ),
-                        lastDay: DateTime.now().add(const Duration(days: 365)),
-                        focusedDay: _focusedDay,
-                        selectedDayPredicate: (day) =>
-                            isSameDay(_selectedDay, day),
-                        onDaySelected: (selected, focused) {
-                          setState(() {
-                            _selectedDay = selected;
-                            _focusedDay = focused;
-                          });
-                        },
-                        calendarFormat: _calendarFormat,
-                        availableCalendarFormats: const {
-                          CalendarFormat.week: 'Semana',
-                        },
-                        calendarStyle: CalendarStyle(
-                          todayDecoration: BoxDecoration(
-                            color: Colors.teal[200],
-                            shape: BoxShape.circle,
+                padding: const EdgeInsets.only(bottom: 32),
+                child: Column(
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Material(
+                        borderRadius: BorderRadius.circular(18),
+                        elevation: 1,
+                        color: colorScheme.surface,
+                        child: Padding(
+                          padding: const EdgeInsets.all(16),
+                          child: TableCalendar<String>(
+                            firstDay: DateTime.now().subtract(
+                              const Duration(days: 365),
+                            ),
+                            lastDay: DateTime.now().add(
+                              const Duration(days: 365),
+                            ),
+                            focusedDay: _focusedDay,
+                            selectedDayPredicate: (day) =>
+                                isSameDay(_selectedDay, day),
+                            onDaySelected: (selected, focused) {
+                              setState(() {
+                                _selectedDay = selected;
+                                _focusedDay = focused;
+                              });
+                            },
+                            calendarFormat: _calendarFormat,
+                            availableCalendarFormats: const {
+                              CalendarFormat.week: 'Semana',
+                            },
+                            calendarStyle: CalendarStyle(
+                              todayDecoration: BoxDecoration(
+                                color: Colors.teal[200],
+                                shape: BoxShape.circle,
+                              ),
+                              selectedDecoration: const BoxDecoration(
+                                color: Colors.teal,
+                                shape: BoxShape.circle,
+                              ),
+                              markerDecoration: const BoxDecoration(
+                                color: Colors.teal,
+                                shape: BoxShape.circle,
+                              ),
+                              markersMaxCount: 3,
+                              defaultTextStyle:
+                                  theme.textTheme.bodyMedium ??
+                                  const TextStyle(),
+                              weekendTextStyle:
+                                  theme.textTheme.bodyMedium ??
+                                  const TextStyle(),
+                              outsideTextStyle:
+                                  (theme.textTheme.bodyMedium ??
+                                          const TextStyle())
+                                      .copyWith(
+                                        color: colorScheme.onSurface
+                                            .withOpacity(0.3),
+                                      ),
+                            ),
+                            eventLoader: _getEventosParaDia,
+                            headerStyle: HeaderStyle(
+                              formatButtonVisible: false,
+                              titleCentered: true,
+                              titleTextStyle:
+                                  (theme.textTheme.titleMedium ??
+                                          const TextStyle())
+                                      .copyWith(fontWeight: FontWeight.w600),
+                              leftChevronIcon: Icon(
+                                Icons.chevron_left,
+                                color: colorScheme.onSurface,
+                              ),
+                              rightChevronIcon: Icon(
+                                Icons.chevron_right,
+                                color: colorScheme.onSurface,
+                              ),
+                            ),
                           ),
-                          selectedDecoration: const BoxDecoration(
-                            color: Colors.teal,
-                            shape: BoxShape.circle,
-                          ),
-                          markerDecoration: const BoxDecoration(
-                            color: Colors.teal,
-                            shape: BoxShape.circle,
-                          ),
-                          markersMaxCount: 3,
-                        ),
-                        eventLoader: _getEventosParaDia,
-                        headerStyle: const HeaderStyle(
-                          formatButtonVisible: false,
-                          titleCentered: true,
                         ),
                       ),
-                      const SizedBox(height: 12),
-                      if (_selectedDay != null)
-                        ..._getEventosParaDia(_selectedDay!).map(
-                          (e) => Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 4.0),
-                            child: Row(
-                              children: [
-                                const Icon(
-                                  Icons.medical_services_outlined,
-                                  size: 18,
-                                  color: Colors.teal,
-                                ),
-                                const SizedBox(width: 8),
-                                Expanded(child: Text(e)),
-                              ],
-                            ),
+                    ),
+                    const SizedBox(height: 12),
+                    if (_selectedDay != null)
+                      ..._getTratamientosConHorasParaDia(
+                        recordatorios,
+                        _selectedDay!,
+                      ).map(
+                        (tratamiento) => Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                          child: _ConsultaTimelineItem(
+                            consulta: {
+                              'description': tratamiento['description'],
+                              'horas': tratamiento['horas'],
+                            },
+                            isFirst: false,
+                            isLast: false,
                           ),
                         ),
-                      const SizedBox(height: 20),
-                      Align(
-                        alignment: Alignment.centerRight,
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.end,
-                          children: [
-                            Container(
-                              width: 40,
-                              height: 40,
-                              decoration: const BoxDecoration(
-                                shape: BoxShape.circle,
+                      ),
+                    const SizedBox(height: 20),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: [
+                          _ActionButton(
+                            icon: LineAwesomeIcons.download_solid,
+                            onPressed: _isLoading
+                                ? null
+                                : _downloadCustomReport,
+                            isLoading: _isLoading,
+                          ),
+                          const SizedBox(width: 12),
+                          _ActionButton(
+                            icon: LineAwesomeIcons.file_alt,
+                            onPressed: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => ReportFormScreen(),
+                                ),
+                              );
+                            },
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                      child: Text(
+                        'Todos los tratamientos',
+                        style: theme.textTheme.titleMedium?.copyWith(
+                          fontWeight: FontWeight.w600,
+                          color: colorScheme.onSurface,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                      child: FutureBuilder<List<Map<String, dynamic>>>(
+                        future: _futureTratamientosDetalle,
+                        builder: (context, snapshot) {
+                          if (snapshot.connectionState ==
+                              ConnectionState.waiting) {
+                            return const Center(
+                              child: CircularProgressIndicator(
                                 color: Colors.teal,
                               ),
-                              child: IconButton(
-                                icon: const Icon(
-                                  LineAwesomeIcons.download_solid,
-                                  color: Colors.white,
+                            );
+                          } else if (snapshot.hasError) {
+                            return Center(
+                              child: Text(
+                                'Error al cargar los tratamientos: ${snapshot.error}',
+                                style: theme.textTheme.bodyMedium?.copyWith(
+                                  color: colorScheme.error,
                                 ),
-                                onPressed: _isLoading
-                                    ? null
-                                    : _downloadCustomReport,
                               ),
-                            ),
-                            const SizedBox(width: 10),
-                            Container(
-                              width: 40,
-                              height: 40,
-                              decoration: const BoxDecoration(
-                                shape: BoxShape.circle,
-                                color: Colors.teal,
-                              ),
-                              child: IconButton(
-                                icon: const Icon(
-                                  LineAwesomeIcons.file_alt,
-                                  color: Colors.white,
-                                ),
-                                onPressed: () {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) => ReportFormScreen(),
+                            );
+                          } else if (!snapshot.hasData ||
+                              snapshot.data!.isEmpty) {
+                            return Center(
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(
+                                    Icons.medical_services_outlined,
+                                    size: 48,
+                                    color: colorScheme.onSurface.withOpacity(
+                                      0.3,
                                     ),
-                                  );
-                                },
+                                  ),
+                                  const SizedBox(height: 16),
+                                  Text(
+                                    'No se encontraron tratamientos',
+                                    style: theme.textTheme.titleMedium
+                                        ?.copyWith(
+                                          color: colorScheme.onSurface
+                                              .withOpacity(0.5),
+                                        ),
+                                  ),
+                                ],
                               ),
-                            ),
-                          ],
-                        ),
+                            );
+                          }
+
+                          final tratamientos = snapshot.data!;
+                          return Column(
+                            children: tratamientos
+                                .map(
+                                  (t) => _TratamientoCard(
+                                    tratamiento: t,
+                                    isExpanded: _expandedTratamientos.contains(
+                                      t['id'],
+                                    ),
+                                    onTap: () {
+                                      setState(() {
+                                        final id = t['id'];
+                                        if (_expandedTratamientos.contains(
+                                          id,
+                                        )) {
+                                          _expandedTratamientos.remove(id);
+                                        } else {
+                                          _expandedTratamientos.add(id);
+                                        }
+                                      });
+                                    },
+                                  ),
+                                )
+                                .toList(),
+                          );
+                        },
                       ),
-                      const SizedBox(height: 16),
-                      ...tratamientos
-                          .map(
-                            (tratamiento) => buildTratamientoCard(tratamiento),
-                          )
-                          .toList(),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
               );
             },
@@ -263,71 +441,244 @@ class TratamientosPageState extends State<TratamientosPage> {
           if (_isLoading)
             Container(
               color: Colors.black54,
-              child: Center(child: CircularProgressIndicator()),
+              child: const Center(
+                child: CircularProgressIndicator(color: Colors.teal),
+              ),
             ),
         ],
       ),
     );
   }
+}
 
-  Widget buildTratamientoCard(Map<String, dynamic> tratamiento) {
-    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
-    final id = tratamiento['id'];
-    final isExpanded = _expandedTratamientos.contains(id);
+class _ConsultaTimelineItem extends StatelessWidget {
+  final Map<String, dynamic> consulta;
+  final bool isFirst;
+  final bool isLast;
+
+  const _ConsultaTimelineItem({
+    required this.consulta,
+    required this.isFirst,
+    required this.isLast,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Column(
+          children: [
+            if (!isFirst)
+              Container(
+                width: 2,
+                height: 12,
+                color: colorScheme.outline.withOpacity(0.2),
+              ),
+            Container(
+              width: 16,
+              height: 16,
+              decoration: BoxDecoration(
+                color: Colors.teal,
+                shape: BoxShape.circle,
+                border: Border.all(color: colorScheme.surface, width: 3),
+              ),
+            ),
+            if (!isLast)
+              Container(
+                width: 2,
+                height: 12,
+                color: colorScheme.outline.withOpacity(0.2),
+              ),
+          ],
+        ),
+        const SizedBox(width: 16),
+        Expanded(
+          child: Material(
+            borderRadius: BorderRadius.circular(18),
+            elevation: 1,
+            color: colorScheme.surface,
+            child: Padding(
+              padding: const EdgeInsets.all(20),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Container(
+                        width: 40,
+                        height: 40,
+                        decoration: BoxDecoration(
+                          color: Colors.teal.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Icon(Icons.medical_services, color: Colors.teal),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              consulta['description'],
+                              style: theme.textTheme.bodyLarge?.copyWith(
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  ...List<Widget>.from(
+                    (consulta['horas'] as List<DateTime>).map(
+                      (hora) => Padding(
+                        padding: const EdgeInsets.only(bottom: 12),
+                        child: Row(
+                          children: [
+                            Container(
+                              width: 8,
+                              height: 8,
+                              margin: const EdgeInsets.only(right: 12),
+                              decoration: const BoxDecoration(
+                                color: Colors.teal,
+                                shape: BoxShape.circle,
+                              ),
+                            ),
+                            Text(
+                              '${hora.hour.toString().padLeft(2, '0')}:${hora.minute.toString().padLeft(2, '0')}',
+                              style: theme.textTheme.bodyMedium,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _ActionButton extends StatelessWidget {
+  final IconData icon;
+  final VoidCallback? onPressed;
+  final bool isLoading;
+
+  const _ActionButton({
+    required this.icon,
+    this.onPressed,
+    this.isLoading = false,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
 
     return Container(
-      width: double.infinity,
-      margin: const EdgeInsets.only(bottom: 16.0),
+      width: 48,
+      height: 48,
       decoration: BoxDecoration(
-        color: isDarkMode ? Colors.grey[850] : Colors.white,
-        borderRadius: BorderRadius.circular(16.0),
+        color: Colors.teal,
+        shape: BoxShape.circle,
         boxShadow: [
           BoxShadow(
-            color: isDarkMode
-                ? Colors.black.withOpacity(0.2)
-                : Colors.black.withOpacity(0.1),
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 6,
+            offset: const Offset(0, 3),
+          ),
+        ],
+      ),
+      child: isLoading
+          ? const Center(
+              child: CircularProgressIndicator(
+                color: Colors.white,
+                strokeWidth: 2,
+              ),
+            )
+          : IconButton(
+              icon: Icon(icon, color: Colors.white),
+              onPressed: onPressed,
+            ),
+    );
+  }
+}
+
+class _TratamientoCard extends StatelessWidget {
+  final Map<String, dynamic> tratamiento;
+  final bool isExpanded;
+  final VoidCallback onTap;
+
+  const _TratamientoCard({
+    required this.tratamiento,
+    required this.isExpanded,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 16),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
         ],
       ),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           InkWell(
-            onTap: () {
-              setState(() {
-                if (isExpanded) {
-                  _expandedTratamientos.remove(id);
-                } else {
-                  _expandedTratamientos.add(id);
-                }
-              });
-            },
+            borderRadius: BorderRadius.vertical(
+              top: const Radius.circular(16),
+              bottom: isExpanded ? Radius.zero : const Radius.circular(16),
+            ),
+            onTap: onTap,
             child: Container(
-              width: double.infinity,
-              padding: const EdgeInsets.symmetric(
-                horizontal: 16.0,
-                vertical: 10.0,
-              ),
+              padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
                 color: Colors.teal,
                 borderRadius: BorderRadius.vertical(
-                  top: const Radius.circular(16.0),
-                  bottom: isExpanded
-                      ? Radius.zero
-                      : const Radius.circular(16.0),
+                  top: const Radius.circular(16),
+                  bottom: isExpanded ? Radius.zero : const Radius.circular(16),
                 ),
               ),
               child: Row(
                 children: [
+                  Container(
+                    width: 40,
+                    height: 40,
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.2),
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(
+                      Icons.medical_services,
+                      color: Colors.white,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
                   Expanded(
                     child: Text(
                       tratamiento['description'] ?? '',
-                      style: const TextStyle(
+                      style: theme.textTheme.bodyLarge?.copyWith(
                         color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 16.0,
+                        fontWeight: FontWeight.w600,
                       ),
                     ),
                   ),
@@ -342,32 +693,44 @@ class TratamientosPageState extends State<TratamientosPage> {
             ),
           ),
           if (isExpanded)
-            Padding(
-              padding: const EdgeInsets.all(16.0),
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: colorScheme.surface,
+                borderRadius: const BorderRadius.vertical(
+                  bottom: Radius.circular(16),
+                ),
+              ),
               child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   if (tratamiento['consultations'] != null &&
                       tratamiento['consultations'].isNotEmpty)
-                    buildInfoRow(
-                      'Fecha de Inicio',
-                      _formatFecha(
+                    _InfoRow(
+                      label: 'Fecha de Inicio',
+                      value: _formatFecha(
                         tratamiento['consultations'][0]['consultation']['consultationDate'],
                       ),
                     ),
-                  const Divider(),
+                  const _Divider(),
                   if (tratamiento['consultations'] != null &&
                       tratamiento['consultations'].isNotEmpty)
-                    buildInfoRow(
-                      'Motivo',
-                      tratamiento['consultations'][0]['consultation']['motivo'],
+                    _InfoRow(
+                      label: 'Motivo',
+                      value:
+                          tratamiento['consultations'][0]['consultation']['motivo'],
                     ),
-                  const Divider(),
-                  buildInfoRow('Duración', tratamiento['duration']),
-                  const Divider(),
-                  buildInfoRow('Frecuencia', _formatFrecuencia(tratamiento)),
-                  const Divider(),
-                  buildInfoRow('Instrucciones', tratamiento['instructions']),
+                  const _Divider(),
+                  _InfoRow(label: 'Duración', value: tratamiento['duration']),
+                  const _Divider(),
+                  _InfoRow(
+                    label: 'Frecuencia',
+                    value: _formatFrecuencia(tratamiento),
+                  ),
+                  const _Divider(),
+                  _InfoRow(
+                    label: 'Instrucciones',
+                    value: tratamiento['instructions'],
+                  ),
                 ],
               ),
             ),
@@ -380,9 +743,7 @@ class TratamientosPageState extends State<TratamientosPage> {
     if (fechaISO == null) return 'No disponible';
     try {
       final date = DateTime.parse(fechaISO);
-      return '${date.day.toString().padLeft(2, '0')}/'
-          '${date.month.toString().padLeft(2, '0')}/'
-          '${date.year}';
+      return DateFormat('dd/MM/yyyy').format(date);
     } catch (_) {
       return 'Fecha inválida';
     }
@@ -395,31 +756,53 @@ class TratamientosPageState extends State<TratamientosPage> {
     final plural = valor > 1 ? 's' : '';
     return '$valor vez$plural $unidad';
   }
+}
 
-  Widget buildInfoRow(String title, String? value) {
-    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+class _InfoRow extends StatelessWidget {
+  final String label;
+  final String? value;
 
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          '$title: ',
-          style: TextStyle(
-            fontWeight: FontWeight.bold,
-            fontSize: 12.0,
-            color: isDarkMode ? Colors.white70 : Colors.black38,
-          ),
-        ),
-        Expanded(
-          child: Text(
-            value ?? 'No disponible',
-            style: TextStyle(
-              fontSize: 12.0,
-              color: isDarkMode ? Colors.white54 : Colors.black54,
+  const _InfoRow({required this.label, required this.value});
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            '$label: ',
+            style: theme.textTheme.bodySmall?.copyWith(
+              color: theme.colorScheme.onSurface.withOpacity(0.6),
+              fontWeight: FontWeight.w600,
             ),
           ),
-        ),
-      ],
+          Expanded(
+            child: Text(
+              value ?? 'No disponible',
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: theme.colorScheme.onSurface.withOpacity(0.8),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _Divider extends StatelessWidget {
+  const _Divider();
+
+  @override
+  Widget build(BuildContext context) {
+    return Divider(
+      height: 1,
+      thickness: 1,
+      color: Theme.of(context).colorScheme.surfaceVariant.withOpacity(0.3),
     );
   }
 }
