@@ -12,10 +12,12 @@ import 'package:asd/screens/userProfile.dart';
 import 'package:flutter/material.dart';
 import 'package:line_awesome_flutter/line_awesome_flutter.dart';
 import 'package:provider/provider.dart';
-
+import '../services/appointment_service.dart';
 import '../components/fadeThroughPageRoute.dart';
 import '../providers/userProvider.dart';
 import '../services/tramientoService.dart';
+
+import 'package:asd/screens/horarios_atencion.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -68,7 +70,7 @@ class HomePageState extends State<HomePage> {
               padding: const EdgeInsets.symmetric(horizontal: 20),
               child: Column(
                 children: [
-                  const SizedBox(height: 40), 
+                  const SizedBox(height: 40),
                   _buildHeader(context, onSurfaceColor, primaryColor),
                   _buildAppointmentsCard(context, surfaceColor, onSurfaceColor),
                   _buildMainActionsSection(primaryColor, onSurfaceColor),
@@ -273,7 +275,7 @@ class HomePageState extends State<HomePage> {
               onPressed: () {
                 Navigator.push(
                   context,
-                  FadeThroughPageRoute(page: const ReservarCitasPage()),
+                  FadeThroughPageRoute(page: const HorariosAtencionPage()),
                 );
               },
             ),

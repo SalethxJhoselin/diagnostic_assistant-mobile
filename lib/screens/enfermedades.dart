@@ -1,5 +1,6 @@
+import 'package:asd/components/customAppBar.dart';
 import 'package:flutter/material.dart';
-import '../services/enfermedades_service.dart'; // Asegúrate de importar el servicio de enfermedades
+import '../services/enfermedades_service.dart';
 
 class EnfermedadesPage extends StatefulWidget {
   const EnfermedadesPage({super.key});
@@ -9,179 +10,210 @@ class EnfermedadesPage extends StatefulWidget {
 }
 
 class _EnfermedadesPageState extends State<EnfermedadesPage> {
-  // Lista de enfermedades cargadas desde el servicio
   List<Map<String, String>> enfermedades =
       EnfermedadesService.obtenerEnfermedades();
-
-  // Lista de enfermedades que se mostrarán, que se filtra dinámicamente
   List<Map<String, String>> enfermedadesFiltradas = [];
+  String currentQuery = '';
 
   @override
   void initState() {
     super.initState();
-    // Inicializamos enfermedadesFiltradas con todas las enfermedades al inicio
     enfermedadesFiltradas = List.from(enfermedades);
   }
 
-  // Método de búsqueda que filtra las enfermedades
   void _buscarEnfermedades(String query) {
     final resultados = enfermedades.where((enfermedad) {
-      final nombreEnfermedad = enfermedad['nombre']?.toLowerCase() ?? '';
-      final queryLower = query.toLowerCase();
-      return nombreEnfermedad.contains(queryLower); // Compara en minúsculas
+      final nombre = enfermedad['nombre']?.toLowerCase() ?? '';
+      return nombre.contains(query.toLowerCase());
     }).toList();
 
     setState(() {
       enfermedadesFiltradas = resultados;
+      currentQuery = query;
     });
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text('Enfermedades de la Piel'),
-        backgroundColor: Color(0xFF3E4A59), // Color de fondo para la AppBar
-        actions: [
-          IconButton(
-            icon: Icon(Icons.search),
-            onPressed: () {
-              showSearch(
-                context: context,
-                delegate: EnfermedadesSearchDelegate(),
-              );
-            },
-          ),
-        ],
-      ),
-      body: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: TextField(
-              onChanged: _buscarEnfermedades,
-              decoration: InputDecoration(
-                labelText: 'Buscar enfermedad...',
-                prefixIcon: Icon(Icons.search),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-              ),
-            ),
-          ),
-          Expanded(
-            child: ListView.builder(
-              itemCount: enfermedadesFiltradas.length,
-              itemBuilder: (context, index) {
-                final enfermedad = enfermedadesFiltradas[index];
-
-                return Card(
-                  margin: EdgeInsets.symmetric(vertical: 10, horizontal: 15),
-                  child: Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          enfermedad['nombre'] ?? 'Sin nombre',
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        SizedBox(height: 10),
-                        Text(
-                          'Descripción:',
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 16,
-                          ),
-                        ),
-                        Text(enfermedad['descripcion'] ?? 'No disponible'),
-                        SizedBox(height: 10),
-                        Text(
-                          'Recomendaciones:',
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 16,
-                          ),
-                        ),
-                        Text(enfermedad['recomendaciones'] ?? 'No disponible'),
-                      ],
-                    ),
+      backgroundColor: const Color.fromARGB(255, 5, 5, 5),
+      appBar: const CustomAppBar(title1: 'Enfermedades de la Piel'),
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            children: [
+              _buildSearchField(),
+              const SizedBox(height: 16),
+              if (enfermedadesFiltradas.isEmpty)
+                const Center(
+                  child: Text(
+                    'No se encontraron enfermedades',
+                    style: TextStyle(color: Colors.white70),
                   ),
-                );
-              },
+                )
+              else
+                ListView.builder(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  itemCount: enfermedadesFiltradas.length,
+                  itemBuilder: (context, index) {
+                    return buildEnfermedadCard(enfermedadesFiltradas[index]);
+                  },
+                ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSearchField() {
+    return TextField(
+      onChanged: _buscarEnfermedades,
+      decoration: InputDecoration(
+        hintText: 'Buscar enfermedad...',
+        prefixIcon: const Icon(Icons.search, color: Colors.black54),
+        suffixIcon: currentQuery.isNotEmpty
+            ? IconButton(
+                icon: const Icon(Icons.clear, color: Colors.black54),
+                onPressed: () {
+                  _buscarEnfermedades('');
+                },
+              )
+            : null,
+        filled: true,
+        fillColor: Colors.white,
+        contentPadding: const EdgeInsets.symmetric(vertical: 0, horizontal: 16),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(30),
+          borderSide: BorderSide.none,
+        ),
+      ),
+    );
+  }
+
+  Widget buildEnfermedadCard(Map<String, String> enfermedad) {
+    return Container(
+      width: double.infinity,
+      margin: const EdgeInsets.only(bottom: 20.0),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(18.0),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 10,
+            offset: const Offset(0, 5),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(16.0),
+            decoration: const BoxDecoration(
+              color: Color(0xFF3E4A59),
+              borderRadius: BorderRadius.vertical(top: Radius.circular(18.0)),
+            ),
+            child: Row(
+              children: [
+                const Icon(Icons.local_hospital, color: Colors.white),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: _buildHighlightedText(
+                    enfermedad['nombre'] ?? 'Sin nombre',
+                    currentQuery,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                buildInfoRow('Descripción', enfermedad['descripcion']),
+                const Divider(color: Colors.black12),
+                buildInfoRow('Recomendaciones', enfermedad['recomendaciones']),
+              ],
             ),
           ),
         ],
       ),
     );
   }
-}
 
-class EnfermedadesSearchDelegate extends SearchDelegate<String> {
-  @override
-  List<Widget> buildActions(BuildContext context) {
-    return [
-      IconButton(
-        icon: Icon(Icons.clear),
-        onPressed: () {
-          query = '';
-        },
+  Widget buildInfoRow(String title, String? value) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          '$title: ',
+          style: const TextStyle(
+            fontWeight: FontWeight.bold,
+            fontSize: 14.0,
+            color: Colors.black45,
+          ),
+        ),
+        Expanded(
+          child: Text(
+            value ?? 'No disponible',
+            style: const TextStyle(fontSize: 14.0, color: Colors.black87),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildHighlightedText(String text, String query) {
+    if (query.isEmpty) {
+      return Text(
+        text,
+        style: const TextStyle(
+          color: Colors.white,
+          fontWeight: FontWeight.bold,
+          fontSize: 18.0,
+        ),
+      );
+    }
+
+    final textLower = text.toLowerCase();
+    final queryLower = query.toLowerCase();
+    final startIndex = textLower.indexOf(queryLower);
+
+    if (startIndex == -1) {
+      return Text(
+        text,
+        style: const TextStyle(
+          color: Colors.white,
+          fontWeight: FontWeight.bold,
+          fontSize: 18.0,
+        ),
+      );
+    }
+
+    final endIndex = startIndex + query.length;
+
+    return RichText(
+      text: TextSpan(
+        style: const TextStyle(
+          color: Colors.white,
+          fontWeight: FontWeight.bold,
+          fontSize: 18.0,
+        ),
+        children: [
+          TextSpan(text: text.substring(0, startIndex)),
+          TextSpan(
+            text: text.substring(startIndex, endIndex),
+            style: const TextStyle(color: Color.fromARGB(255, 218, 213, 171)),
+          ),
+          TextSpan(text: text.substring(endIndex)),
+        ],
       ),
-    ];
-  }
-
-  @override
-  Widget buildLeading(BuildContext context) {
-    return IconButton(
-      icon: Icon(Icons.arrow_back),
-      onPressed: () {
-        close(context, '');
-      },
-    );
-  }
-
-  @override
-  Widget buildResults(BuildContext context) {
-    // Aquí puedes mostrar los resultados de la búsqueda
-    final results = EnfermedadesService.obtenerEnfermedades().where((
-      enfermedad,
-    ) {
-      return enfermedad['nombre']!.toLowerCase().contains(query.toLowerCase());
-    }).toList();
-
-    return ListView.builder(
-      itemCount: results.length,
-      itemBuilder: (context, index) {
-        final enfermedad = results[index];
-        return ListTile(
-          title: Text(enfermedad['nombre'] ?? 'Sin nombre'),
-          subtitle: Text(enfermedad['descripcion'] ?? 'Sin descripción'),
-        );
-      },
-    );
-  }
-
-  @override
-  Widget buildSuggestions(BuildContext context) {
-    // Sugerencias mientras el usuario escribe
-    final suggestions = EnfermedadesService.obtenerEnfermedades().where((
-      enfermedad,
-    ) {
-      return enfermedad['nombre']!.toLowerCase().contains(query.toLowerCase());
-    }).toList();
-
-    return ListView.builder(
-      itemCount: suggestions.length,
-      itemBuilder: (context, index) {
-        final enfermedad = suggestions[index];
-        return ListTile(
-          title: Text(enfermedad['nombre'] ?? 'Sin nombre'),
-          subtitle: Text(enfermedad['descripcion'] ?? 'Sin descripción'),
-        );
-      },
     );
   }
 }

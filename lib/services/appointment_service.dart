@@ -7,10 +7,9 @@ import '../providers/userProvider.dart'; // Importamos el UserProvider
 
 class AppointmentService {
   // Obtener las horas de atención para una organización específica
-  static Future<Map<String, dynamic>> obtenerHorasAtencionPorOrganizacion(
+  static Future<List<Map<String, dynamic>>> obtenerHorasAtencionPorOrganizacion(
     String organizationId,
   ) async {
-    // URL modificada con el ID de la organización
     final uri = Uri.parse(
       '${Constantes.uri}/attention-hour/organization/$organizationId',
     );
@@ -19,9 +18,8 @@ class AppointmentService {
       final response = await http.get(uri);
 
       if (response.statusCode == 200) {
-        return json.decode(
-          response.body,
-        ); // Devolvemos la respuesta como un mapa
+        final List<dynamic> decoded = json.decode(response.body);
+        return List<Map<String, dynamic>>.from(decoded);
       } else {
         throw Exception(
           'Error al cargar las horas de atención para la organización: ${response.statusCode}',
@@ -34,18 +32,23 @@ class AppointmentService {
 
   // Crear una nueva cita (modificado para no depender del UserProvider directamente)
   static Future<Map<String, dynamic>> crearCita({
-    required String appointmentDatetime,
+    required String date,
+    required String startTime,
+    required String endTime,
     required String patientId,
     required String organizationId,
   }) async {
-    final uri = Uri.parse(
-      '${Constantes.uri}/appointments',
-    ); // URL para crear cita
+    final uri = Uri.parse('${Constantes.uri}/appointments');
+
     final body = {
-      'appointmentdatetime': appointmentDatetime,
-      'patientid': patientId,
-      'organizationid': organizationId,
+      'date': date,
+      'startTime': startTime,
+      'endTime': endTime,
+      'patientId': patientId,
+      'organizationId': organizationId,
     };
+
+    print('Cuerpo enviado: ${json.encode(body)}');
 
     try {
       final response = await http.post(
@@ -55,9 +58,11 @@ class AppointmentService {
       );
 
       if (response.statusCode == 201) {
-        return json.decode(response.body); // Cita creada exitosamente
+        return json.decode(response.body);
       } else {
-        throw Exception('Error al crear la cita: ${response.statusCode}');
+        throw Exception(
+          'Error al crear la cita: ${response.statusCode} ${response.body}',
+        );
       }
     } catch (e) {
       throw Exception('Error en la solicitud: $e');
