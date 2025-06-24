@@ -48,4 +48,30 @@ class PatientService {
       return false;
     }
   }
+
+  static Future<bool> registerDeviceToken({
+    required String patientId,
+    required String fcmToken,
+  }) async {
+    try {
+      final response = await http.post(
+        Uri.parse('${Constantes.uri}/patients/register-device-token'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({'patientId': patientId, 'fcmToken': fcmToken}),
+      );
+
+      if (response.statusCode == 200) {
+        print('Dispositivo registrado correctamente');
+        return true;
+      } else {
+        final responseData = jsonDecode(response.body);
+        final errorMsg = responseData['msg'] ?? 'Error desconocido';
+        print('Error: $errorMsg');
+        return false;
+      }
+    } catch (e) {
+      print('Error de conexion: $e');
+      return false;
+    }
+  }
 }

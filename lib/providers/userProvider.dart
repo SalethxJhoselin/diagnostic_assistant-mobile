@@ -1,3 +1,4 @@
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:jwt_decoder/jwt_decoder.dart';
@@ -6,6 +7,7 @@ import '../services/patientService.dart';
 
 class UserProvider with ChangeNotifier {
   final FlutterSecureStorage _storage = const FlutterSecureStorage();
+  final FirebaseMessaging _firebaseMessaging = FirebaseMessaging.instance;
 
   String? _token;
   String? _patientId;
@@ -101,6 +103,8 @@ class UserProvider with ChangeNotifier {
     _patientId = org['patientId'];
     _email = org['hostUser'];
     notifyListeners();
+
+    _handleDeviceTokenRegistration(); // Llamar al método para FCM
   }
 
   // Guardar token y cargar datos del usuario
@@ -113,5 +117,29 @@ class UserProvider with ChangeNotifier {
   Future<bool> isAuthenticated() async {
     final token = await _storage.read(key: 'token');
     return token != null && !JwtDecoder.isExpired(token);
+  }
+
+  Future<void> _handleDeviceTokenRegistration() async {
+    if (_patientId == null) return;
+
+    try {
+      String? fcmToken = await _firebaseMessaging.getToken();
+      debugPrint('==== FCM token ====');
+      debugPrint(fcmToken);
+
+      if (fcmToken != null) {
+        final success = await PatientService.registerDeviceToken(
+          patientId: _patientId!,
+          fcmToken: fcmToken,
+        );
+        if (!success) {
+          debugPrint('Error al registrar el device token');
+        }
+      } else {
+        debugPrint('No se pudo obtener el FCM token');
+      }
+    } catch (e) {
+      debugPrint('Excepción al registrar device token: $e');
+    }
   }
 }
