@@ -131,4 +131,27 @@ class AppointmentService {
       throw Exception('Error en la solicitud: $e');
     }
   }
+
+  static Future<List<Map<String, dynamic>>> obtenerCitasPorPaciente(
+    String patientId,
+  ) async {
+    final uri = Uri.parse(
+      '${Constantes.uri}/appointments?patientId=$patientId',
+    );
+
+    try {
+      final response = await http.get(uri);
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body) as List<dynamic>;
+        return data.map((e) => Map<String, dynamic>.from(e)).toList();
+      } else {
+        throw Exception(
+          'Error al obtener las citas: ${response.statusCode} ${response.body}',
+        );
+      }
+    } catch (e) {
+      throw Exception('Error en la solicitud: $e');
+    }
+  }
 }
