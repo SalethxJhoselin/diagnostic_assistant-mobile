@@ -1,5 +1,8 @@
+import 'package:asd/providers/pushNotificationProvider.dart';
 import 'package:asd/screens/home.dart';
 import 'package:asd/screens/login.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_downloader/flutter_downloader.dart';
 import 'package:get/get.dart';
@@ -11,21 +14,43 @@ import 'providers/userProvider.dart';
 import 'screens/splash.dart';
 import 'screens/welcomeScreen.dart';
 
+@pragma('vm:entry-point')
+Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
+  await Firebase.initializeApp(); // Inicializar Firebase en segundo plano
+  print('=== onBackgroundMessage ===');
+  print('Datos del mensaje: ${message.data}');
+  // Llamar a la misma lógica de navegación
+  final pushProvider = Pushnotificationprovider();
+  pushProvider.handleMessage(message); // Llamar al manejador de navegación
+}
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp();
+  FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
   await FlutterDownloader.initialize();
+
+  // Inicializar notificaciones push
+  final pushProvider = Pushnotificationprovider();
+  await pushProvider.initNotifications();
+
   runApp(const MyApp());
 }
 
-class MyApp extends StatelessWidget {
+class MyApp extends StatefulWidget {
   const MyApp({super.key});
 
+  @override
+  State<MyApp> createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> {
   @override
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => UserProvider()),
-        ChangeNotifierProvider(create: (_) => ThemeProvider())
+        ChangeNotifierProvider(create: (_) => ThemeProvider()),
       ],
       child: Consumer<ThemeProvider>(
         builder: (context, themeProvider, child) {
