@@ -11,10 +11,6 @@ class Pushnotificationprovider {
       sound: true,
     );
 
-    String? token = await _firebaseMessaging.getToken();
-    print('==== FCM token ====');
-    print(token);
-
     // Manejar mensajes en primer plano
     FirebaseMessaging.onMessage.listen((RemoteMessage message) {
       print('=== onMessage ===');
@@ -41,11 +37,11 @@ class Pushnotificationprovider {
     final data = message.data;
     print('Procesando mensaje en handleMessage. Datos: $data');
     if (data.containsKey('screen')) {
-      final screen = data['screen'];
+      final screen = data['welcome'];
       print('Navegando a: $screen');
       Get.toNamed(screen);
     } else {
-      print('No se encontró "screen", navegando a /home por defecto');
+      print('No se encontró "screen", navegando a /welcome por defecto');
       Get.toNamed('/welcome');
     }
   }
