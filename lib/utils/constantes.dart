@@ -1,4 +1,4 @@
 class Constantes {
   static String uri =
-      "https://nest-project-image-recognition-si53.onrender.com";
+      "https://nest-project-image-recognition-fmlv.onrender.com";
 }
