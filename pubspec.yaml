@@ -57,6 +57,8 @@ dependencies:
     sdk: flutter
   table_calendar: ^3.2.0
   firebase_messaging: ^15.2.7
+  uuid: ^4.5.1
+  google_generative_ai: ^0.2.0
 
 dev_dependencies:
   flutter_launcher_icons: ^0.13.1

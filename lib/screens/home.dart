@@ -2,22 +2,20 @@ import 'package:asd/components/Card.dart';
 import 'package:asd/components/actionButton.dart';
 import 'package:asd/components/wabeClipper.dart';
 import 'package:asd/providers/themeProvider.dart';
+import 'package:asd/screens/DermatologyChatPage.dart';
 import 'package:asd/screens/consulations.dart';
 import 'package:asd/screens/diagnoses.dart';
-import 'package:asd/screens/enfermedades.dart';
+import 'package:asd/screens/horarios_atencion.dart';
 import 'package:asd/screens/patientHistory.dart';
-import 'package:asd/screens/reservaCitas.dart';
 import 'package:asd/screens/treatment.dart';
 import 'package:asd/screens/userProfile.dart';
 import 'package:flutter/material.dart';
 import 'package:line_awesome_flutter/line_awesome_flutter.dart';
 import 'package:provider/provider.dart';
-import '../services/appointment_service.dart';
+
 import '../components/fadeThroughPageRoute.dart';
 import '../providers/userProvider.dart';
 import '../services/tramientoService.dart';
-
-import 'package:asd/screens/horarios_atencion.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -370,7 +368,7 @@ class HomePageState extends State<HomePage> {
               onPressed: () {
                 Navigator.of(
                   context,
-                ).push(FadeThroughPageRoute(page: const EnfermedadesPage()));
+                ).push(FadeThroughPageRoute(page: const DermatologyChatPage()));
               },
             ),
             const SizedBox(height: 12),
